@@ -6,44 +6,44 @@
   <title>Download Smart School Tool</title>
   <style>
     :root {
-      --bg: #f4f6fb;
-      --card: #ffffff;
-      --text: #1d2433;
-      --muted: #6b7385;
-      --accent: #3b6cf6;
-      --accent-hover: #2b57d4;
-      --border: #dde2ee;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #12151d;
-        --card: #1b2030;
-        --text: #e6e9f2;
-        --muted: #9aa3b8;
-        --border: #2c3347;
-      }
+      color-scheme: dark;
+      --bg: #0b0e16;
+      --bg-glow: #141a2b;
+      --card: rgba(24, 29, 44, 0.78);
+      --text: #e8ebf3;
+      --muted: #98a1b7;
+      --accent: #4f7dff;
+      --accent-hover: #6b91ff;
+      --border: rgba(255, 255, 255, 0.09);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top, var(--bg-glow), var(--bg) 70%) fixed;
+      background-color: var(--bg);
       color: var(--text);
       line-height: 1.5;
     }
+    /* Falling dots canvas (snow.js) sits behind everything. */
+    .snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
     main {
+      position: relative;
+      z-index: 1;
       max-width: 560px;
       margin: 0 auto;
       padding: 3rem 16px;
       text-align: center;
     }
-    .logo { width: 96px; height: 96px; }
+    .logo { width: 96px; height: 96px; filter: drop-shadow(0 8px 24px rgba(79, 125, 255, 0.35)); }
     h1 { margin: 0.75rem 0 0.25rem; }
     .tagline { color: var(--muted); margin: 0 0 2rem; }
     .card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      border-radius: 14px;
       padding: 1.5rem;
       margin-bottom: 1rem;
       text-align: left;
@@ -113,6 +113,8 @@
     <p class="other" id="other"></p>
   </main>
 
+  <!-- snow.js is copied in from src/ when the site is deployed (see .github/workflows/build-apps.yml). -->
+  <script src="snow.js"></script>
   <script>
     // Pick the download that matches the visitor's computer.
     function detectOS() {
