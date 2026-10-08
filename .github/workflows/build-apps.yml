@@ -79,9 +79,11 @@ jobs:
 
   # Hosts the download page (download/index.html) on GitHub Pages.
   # Runs only on the default branch; Pages must be enabled with source "GitHub Actions".
+  # Allowed to fail so the app builds stay green until Pages is turned on in the repo settings.
   pages:
     if: github.ref_name == github.event.repository.default_branch
     needs: release
+    continue-on-error: true
     runs-on: ubuntu-latest
     permissions:
       pages: write
