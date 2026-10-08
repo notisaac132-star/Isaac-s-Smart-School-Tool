@@ -70,6 +70,7 @@
     }
     .btn.secondary:hover { background: var(--accent); color: #fff; }
     .steps { color: var(--muted); font-size: 0.95rem; padding-left: 1.2rem; margin: 1rem 0 0; }
+    .steps code { font-size: 0.85em; word-break: break-all; background: var(--bg); padding: 0.1em 0.3em; border-radius: 4px; }
     .other { margin-top: 1.5rem; color: var(--muted); font-size: 0.95rem; }
     .other a { color: var(--accent); }
     [hidden] { display: none !important; }
@@ -103,7 +104,8 @@
       <a class="btn secondary" href="https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Mac.zip">Download as .zip</a>
       <ol class="steps">
         <li>Open the .dmg and drag <strong>Smart School Tool</strong> into Applications.</li>
-        <li>The first time, macOS may say it can't verify the app. Go to <strong>System Settings → Privacy &amp; Security</strong>, scroll down and click <strong>Open Anyway</strong>.</li>
+        <li>The first time, macOS says it can't verify the app. Click <strong>Done</strong>, then go to <strong>Apple menu → System Settings → Privacy &amp; Security</strong>, scroll down and click <strong>Open Anyway</strong>.</li>
+        <li>No <strong>Open Anyway</strong> button? Open Terminal, paste this and press Enter:<br><code>xattr -dr com.apple.quarantine "/Applications/Smart School Tool.app"</code></li>
         <li>Works on both Apple Silicon (M1/M2/M3…) and Intel Macs.</li>
       </ol>
     </section>

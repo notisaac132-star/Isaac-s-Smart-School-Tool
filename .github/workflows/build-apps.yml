@@ -85,6 +85,9 @@ jobs:
             **Windows:** download `Smart-School-Tool-Windows-Setup.exe` (installer) or `Smart-School-Tool-Windows-Portable.exe` (no install).
             **Mac:** download `Smart-School-Tool-Mac.dmg`, open it and drag the app into Applications.
 
+            **Mac says "Apple could not verify…"?** Click **Done**, then go to Apple menu → System Settings → Privacy & Security, scroll down and click **Open Anyway**. No button? Run this in Terminal: `xattr -dr com.apple.quarantine "/Applications/Smart School Tool.app"`
+            **Windows says "Windows protected your PC"?** Click **More info → Run anyway**.
+
             Already have the app? It updates itself on Windows, and on Mac it tells you when a new version is ready.
 
             Built from ${{ github.sha }}.
