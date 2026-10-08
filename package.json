@@ -1,0 +1,19 @@
+{
+  "name": "smart-school-tool",
+  "productName": "Smart School Tool",
+  "version": "1.0.0",
+  "description": "Isaac's Smart School Tool",
+  "main": "src/main.js",
+  "author": "Isaac",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:windows": "electron-builder --win --config windows/electron-builder.yml --publish never",
+    "build:mac": "electron-builder --mac --config mac/electron-builder.yml --publish never"
+  },
+  "devDependencies": {
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3"
+  }
+}
