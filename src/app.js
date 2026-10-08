@@ -1,4 +1,5 @@
-// Smart School Tool: accounts (Supabase Auth) and each account's teacher/tutor contacts.
+// Smart School Tool: accounts (Supabase Auth), each account's teachers/tutors, and logged study time.
+// Every Sunday a GitHub Actions job (scripts/send-weekly-reports.mjs) emails the week's sessions to the teachers.
 
 const config = window.APP_CONFIG || {};
 const configured = Boolean(config.supabaseUrl && config.supabaseKey && window.supabase);
@@ -7,9 +8,12 @@ const db = configured ? window.supabase.createClient(config.supabaseUrl, config.
 // Contacts saved on this computer before accounts existed; moved into the account on first login.
 const LEGACY_STORAGE_KEY = "smartSchoolTool.contacts";
 const KINDS = { teachers: "teacher", tutors: "tutor" };
+const CONTACT_FIELDS = "id, kind, name, subject, email, reports";
 
 let currentUser = null;
 const contacts = { teachers: [], tutors: [] };
+let contactsLoaded = false;
+let sessions = []; // study sessions not yet emailed (they go in the next weekly report)
 
 // ---------- Small helpers ----------
 
@@ -40,12 +44,27 @@ function plural(count, word) {
 
 // ---------- Screens ----------
 
+function needsSetup() {
+  return Boolean(currentUser) && contactsLoaded && contacts.teachers.length === 0;
+}
+
 function showView() {
-  let id = location.hash === "#contacts" ? "contacts" : "home";
+  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study" };
+  let id = routes[location.hash] || "home";
   if (!currentUser) id = "auth";
+  // New accounts have to add a teacher before anything else.
+  const setup = needsSetup() || (currentUser && location.hash === "#setup");
+  if (needsSetup()) id = "contacts";
+
+  $("setup-intro").hidden = !setup;
+  $("setup-done").hidden = !setup;
+  $("contacts-header").hidden = setup;
+  setMessage("setup-message", "");
+
   document.querySelectorAll(".view").forEach((view) => {
     view.hidden = view.id !== id;
   });
+  if (id === "study") prepareStudyForm();
   window.scrollTo(0, 0);
 }
 
@@ -134,7 +153,8 @@ async function onSignedIn(user) {
   showView();
   if (isNewLogin) {
     await importLegacyContacts();
-    await loadContacts();
+    await Promise.all([loadContacts(), loadSessions()]);
+    showView();
   }
 }
 
@@ -142,7 +162,10 @@ function onSignedOut() {
   currentUser = null;
   contacts.teachers = [];
   contacts.tutors = [];
+  contactsLoaded = false;
+  sessions = [];
   renderAll();
+  renderSessions();
   setAuthMode("login");
   location.hash = "";
   showView();
@@ -153,7 +176,7 @@ function onSignedOut() {
 async function loadContacts() {
   const { data, error } = await db
     .from("contacts")
-    .select("id, kind, name, subject, email")
+    .select(CONTACT_FIELDS)
     .order("created_at", { ascending: true });
   if (error) {
     setMessage("teachers-message", `Couldn't load your contacts: ${friendlyError(error)}`);
@@ -161,6 +184,7 @@ async function loadContacts() {
   }
   contacts.teachers = data.filter((c) => c.kind === "teacher");
   contacts.tutors = data.filter((c) => c.kind === "tutor");
+  contactsLoaded = true;
   setMessage("teachers-message", "");
   renderAll();
 }
@@ -177,7 +201,7 @@ async function importLegacyContacts() {
   const rows = [];
   for (const [list, kind] of Object.entries(KINDS)) {
     for (const c of saved[list] || []) {
-      if (c && c.name && c.email) rows.push({ kind, name: c.name, subject: c.subject || "", email: c.email });
+      if (c && c.name && c.email) rows.push({ kind, name: c.name, subject: c.subject || "", email: c.email, reports: kind === "teacher" });
     }
   }
   if (rows.length > 0) {
@@ -200,6 +224,8 @@ function updateSummary() {
 function renderAll() {
   render("teachers");
   render("tutors");
+  renderRecipients();
+  renderSubjectSuggestions();
 }
 
 function render(list) {
@@ -235,7 +261,26 @@ function render(list) {
     email.href = `mailto:${contact.email}`;
     email.textContent = contact.email;
 
-    info.append(name, email);
+    const reports = document.createElement("label");
+    reports.className = "report-toggle";
+    const toggle = document.createElement("input");
+    toggle.type = "checkbox";
+    toggle.checked = contact.reports;
+    toggle.addEventListener("change", async () => {
+      toggle.disabled = true;
+      const { error } = await db.from("contacts").update({ reports: toggle.checked }).eq("id", contact.id);
+      toggle.disabled = false;
+      if (error) {
+        toggle.checked = !toggle.checked;
+        setMessage(`${list}-message`, `Couldn't save: ${friendlyError(error)}`);
+        return;
+      }
+      contact.reports = toggle.checked;
+      renderRecipients();
+    });
+    reports.append(toggle, " Weekly report");
+
+    info.append(name, email, reports);
 
     const remove = document.createElement("button");
     remove.className = "remove-btn";
@@ -252,6 +297,7 @@ function render(list) {
       contacts[list] = contacts[list].filter((c) => c.id !== contact.id);
       setMessage(`${list}-message`, "");
       render(list);
+      renderRecipients();
     });
 
     item.append(info, remove);
@@ -274,8 +320,9 @@ document.querySelectorAll(".contact-form").forEach((form) => {
         name: data.get("name").trim(),
         subject: data.get("subject").trim(),
         email: data.get("email").trim(),
+        reports: list === "teachers",
       })
-      .select("id, kind, name, subject, email")
+      .select(CONTACT_FIELDS)
       .single();
 
     button.disabled = false;
@@ -286,9 +333,145 @@ document.querySelectorAll(".contact-form").forEach((form) => {
     contacts[list].push(row);
     setMessage(`${list}-message`, "");
     render(list);
+    renderRecipients();
+    renderSubjectSuggestions();
     form.reset();
     form.querySelector("input").focus();
   });
+});
+
+// ---------- Study sessions ----------
+
+function formatMinutes(total) {
+  const hours = Math.floor(total / 60);
+  const minutes = total % 60;
+  if (!hours) return `${minutes} min`;
+  return minutes ? `${hours} h ${minutes} min` : `${hours} h`;
+}
+
+function nextReportDay() {
+  const date = new Date();
+  date.setDate(date.getDate() + ((7 - date.getDay()) % 7 || 7));
+  return date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+}
+
+function joinNames(names) {
+  if (names.length <= 1) return names.join("");
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
+async function loadSessions() {
+  const { data, error } = await db
+    .from("study_sessions")
+    .select("id, subject, minutes, studied_on, notes")
+    .is("reported_at", null)
+    .order("studied_on", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) {
+    setMessage("study-message", `Couldn't load your study time: ${friendlyError(error)}`);
+    return;
+  }
+  sessions = data;
+  renderSessions();
+}
+
+function renderRecipients() {
+  const recipients = [...contacts.teachers, ...contacts.tutors].filter((c) => c.reports);
+  $("report-recipients").textContent = recipients.length
+    ? `Emailed to ${joinNames(recipients.map((c) => c.name))} on ${nextReportDay()}.`
+    : "Nobody is set to get your weekly report. Switch on \"Weekly report\" for a teacher in Teachers & Tutors.";
+  $("report-recipients").classList.toggle("warning", recipients.length === 0);
+}
+
+function renderSubjectSuggestions() {
+  const subjects = new Set([...contacts.teachers, ...contacts.tutors].map((c) => c.subject).filter(Boolean));
+  sessions.forEach((s) => subjects.add(s.subject));
+  $("subjects-list").replaceChildren(...[...subjects].sort().map((s) => UI.h("option", { value: s })));
+}
+
+function renderSessions() {
+  const total = sessions.reduce((sum, s) => sum + s.minutes, 0);
+  $("week-total").textContent = total ? `Total: ${formatMinutes(total)}` : "";
+  $("study-summary").textContent = total
+    ? `${formatMinutes(total)} logged for this week's report`
+    : "Nothing logged this week yet";
+
+  const list = $("session-list");
+  if (sessions.length === 0) {
+    list.replaceChildren(UI.h("li", { class: "empty", text: "Nothing logged yet. Add your first study session above." }));
+    return;
+  }
+  list.replaceChildren(...sessions.map((session) => {
+    const day = UI.parseDateKey(session.studied_on).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    const remove = UI.h("button", { type: "button", class: "remove-btn", text: "Remove" });
+    remove.addEventListener("click", async () => {
+      remove.disabled = true;
+      const { error } = await db.from("study_sessions").delete().eq("id", session.id);
+      if (error) {
+        remove.disabled = false;
+        setMessage("study-message", `Couldn't remove: ${friendlyError(error)}`);
+        return;
+      }
+      sessions = sessions.filter((s) => s.id !== session.id);
+      renderSessions();
+    });
+    return UI.h("li", {},
+      UI.h("div", { class: "session-info" },
+        UI.h("div", { class: "session-title" }, session.subject, UI.h("span", { class: "session-minutes", text: ` · ${formatMinutes(session.minutes)}` })),
+        UI.h("div", { class: "session-meta", text: day }),
+        session.notes ? UI.h("div", { class: "session-notes", text: session.notes }) : null),
+      remove);
+  }));
+}
+
+function prepareStudyForm() {
+  const form = $("study-form");
+  if (!form.elements.studied_on.value) form.elements.studied_on.value = UI.dateKey();
+  form.elements.studied_on.max = UI.dateKey();
+}
+
+$("study-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.target;
+  const subject = form.elements.subject.value.trim();
+  const minutes = Number(form.elements.minutes.value);
+  const studiedOn = form.elements.studied_on.value;
+  if (!subject) return setMessage("study-message", "Say what you studied.");
+  if (!Number.isInteger(minutes) || minutes < 1 || minutes > 1440) return setMessage("study-message", "Enter how many minutes you studied (1 to 1440).");
+  if (!studiedOn || studiedOn > UI.dateKey()) return setMessage("study-message", "Pick the day you studied (not in the future).");
+
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  const { data: row, error } = await db
+    .from("study_sessions")
+    .insert({ subject, minutes, studied_on: studiedOn, notes: form.elements.notes.value.trim() })
+    .select("id, subject, minutes, studied_on, notes")
+    .single();
+  button.disabled = false;
+  if (error) return setMessage("study-message", `Couldn't save: ${friendlyError(error)}`);
+
+  sessions.push(row);
+  sessions.sort((a, b) => a.studied_on.localeCompare(b.studied_on));
+  renderSessions();
+  renderSubjectSuggestions();
+  form.reset();
+  prepareStudyForm();
+  setMessage("study-message", `Logged ${formatMinutes(minutes)} of ${subject}.`, false);
+});
+
+document.querySelectorAll(".chip-btn[data-minutes]").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    $("study-form").elements.minutes.value = chip.dataset.minutes;
+  });
+});
+
+$("setup-continue").addEventListener("click", () => {
+  if (contacts.teachers.length === 0) {
+    setMessage("setup-message", "Add at least one teacher to continue.");
+    return;
+  }
+  location.hash = "#study";
+  showView();
 });
 
 // ---------- Start up ----------
@@ -304,6 +487,7 @@ window.addEventListener("hashchange", showView);
 
 setAuthMode("login");
 renderAll();
+renderSessions();
 greet();
 showView();
 
