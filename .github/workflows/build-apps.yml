@@ -110,8 +110,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      - name: Share the falling-dots background with the site
-        run: cp src/snow.js download/snow.js
+      - name: Install the Supabase library
+        run: npm ci --omit=dev --ignore-scripts
+      - name: Share the app's background, account settings and Supabase library with the site
+        run: |
+          cp src/snow.js src/config.js download/
+          cp node_modules/@supabase/supabase-js/dist/umd/supabase.js download/supabase.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: download

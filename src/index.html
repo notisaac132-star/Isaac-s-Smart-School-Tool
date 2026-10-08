@@ -8,8 +8,54 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Log in / sign up -->
+  <main class="view" id="auth" hidden>
+    <div class="hero hero-compact">
+      <svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
+        <rect x="16" y="16" width="480" height="480" rx="110" fill="#3b6cf6"/>
+        <path d="M256 130 L440 215 L256 300 L72 215 Z" fill="#fff"/>
+        <path d="M150 255 V340 C150 380 362 380 362 340 V255 L256 305 Z" fill="#fff"/>
+        <path d="M420 225 V330" stroke="#ffd34d" stroke-width="16" stroke-linecap="round"/>
+        <circle cx="420" cy="342" r="18" fill="#ffd34d"/>
+      </svg>
+      <h1>Isaac's Smart School Tool</h1>
+      <p class="today">Log in to see your teachers and tutors on any computer.</p>
+    </div>
+
+    <section class="card auth-card">
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab" role="tab" data-mode="login" aria-selected="true">Log in</button>
+        <button type="button" class="tab" role="tab" data-mode="signup" aria-selected="false">Sign up</button>
+      </div>
+
+      <form id="auth-form" novalidate>
+        <label class="field" data-only="signup" hidden>
+          <span>Your name</span>
+          <input name="name" type="text" autocomplete="name" placeholder="Isaac">
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+        </label>
+        <label class="field" data-hide="reset">
+          <span>Password</span>
+          <input name="password" type="password" autocomplete="current-password" placeholder="At least 8 characters" required>
+        </label>
+        <p class="form-message" id="auth-message" role="status"></p>
+        <button type="submit" id="auth-submit">Log in</button>
+      </form>
+
+      <button type="button" class="link-btn" id="forgot-btn" data-only="login">Forgot password?</button>
+      <button type="button" class="link-btn" id="back-to-login" data-only="reset" hidden>← Back to log in</button>
+    </section>
+  </main>
+
   <!-- Landing page -->
-  <main class="view" id="home">
+  <main class="view" id="home" hidden>
+    <div class="account-bar">
+      <span class="account-email" id="account-email"></span>
+      <button type="button" class="ghost-btn" id="logout-btn">Log out</button>
+    </div>
     <div class="hero">
       <svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
         <rect x="16" y="16" width="480" height="480" rx="110" fill="#3b6cf6"/>
@@ -24,6 +70,14 @@
     </div>
 
     <div class="tiles">
+      <a class="tile tile-primary" href="#study">
+        <svg class="tile-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M12 9v4l2.5 2.5M9.5 2.5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="tile-title">Log study time</span>
+        <span class="tile-sub" id="study-summary">Nothing logged this week yet</span>
+      </a>
       <a class="tile" href="#contacts">
         <svg class="tile-icon" viewBox="0 0 24 24" aria-hidden="true">
           <rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -32,47 +86,106 @@
         <span class="tile-title">Teachers &amp; Tutors</span>
         <span class="tile-sub" id="contacts-summary">Add your teachers' and tutors' emails</span>
       </a>
-      <div class="tile tile-soon" aria-disabled="true">
-        <svg class="tile-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        <span class="tile-title">More coming soon</span>
-        <span class="tile-sub">New tools will show up here</span>
-      </div>
     </div>
   </main>
 
   <!-- Teachers & tutors -->
   <main class="view" id="contacts" hidden>
-    <div class="view-header">
+    <div class="view-header" id="contacts-header">
       <a class="back" href="#home">← Home</a>
       <h1>Teachers &amp; Tutors</h1>
     </div>
 
+    <div class="card setup-intro" id="setup-intro" hidden>
+      <h1>Welcome! Let's set up your account</h1>
+      <p>Add your teacher's email. Every week they'll get an email with what you studied and for how long.
+        You can add more than one teacher, and tutors too if you have them (optional).</p>
+    </div>
+
     <section class="card" id="teachers-section">
       <h2>Teachers</h2>
+      <p class="section-hint">Teachers get your weekly study report.</p>
       <form class="contact-form" data-kind="teachers">
         <input name="name" type="text" placeholder="Name (e.g. Ms. Smith)" required>
         <input name="subject" type="text" placeholder="Subject (optional)">
         <input name="email" type="email" placeholder="teacher@school.edu" required>
         <button type="submit">Add teacher</button>
       </form>
+      <p class="form-message" id="teachers-message" role="status"></p>
       <ul class="contact-list" id="teachers-list"></ul>
     </section>
 
     <section class="card" id="tutors-section">
-      <h2>Tutors</h2>
+      <h2>Tutors <span class="optional">optional</span></h2>
+      <p class="section-hint">Tutors don't get the report unless you switch it on for them.</p>
       <form class="contact-form" data-kind="tutors">
         <input name="name" type="text" placeholder="Name (e.g. Alex)" required>
         <input name="subject" type="text" placeholder="Subject (optional)">
         <input name="email" type="email" placeholder="tutor@example.com" required>
         <button type="submit">Add tutor</button>
       </form>
+      <p class="form-message" id="tutors-message" role="status"></p>
       <ul class="contact-list" id="tutors-list"></ul>
+    </section>
+
+    <div class="setup-done" id="setup-done" hidden>
+      <p class="form-message" id="setup-message" role="status"></p>
+      <button type="button" id="setup-continue">Continue</button>
+    </div>
+  </main>
+
+  <!-- Log study time -->
+  <main class="view" id="study" hidden>
+    <div class="view-header">
+      <a class="back" href="#home">← Home</a>
+      <h1>Log study time</h1>
+    </div>
+
+    <section class="card">
+      <form id="study-form" class="study-form" novalidate>
+        <label class="field field-wide">
+          <span>What did you study?</span>
+          <input name="subject" type="text" list="subjects-list" maxlength="200" placeholder="e.g. Math: fractions homework" required>
+          <datalist id="subjects-list"></datalist>
+        </label>
+        <label class="field">
+          <span>How long? (minutes)</span>
+          <input name="minutes" type="number" min="1" max="1440" step="1" placeholder="30" required>
+        </label>
+        <label class="field">
+          <span>When?</span>
+          <input name="studied_on" type="date" required>
+        </label>
+        <div class="quick-times field-wide" aria-label="Quick times">
+          <button type="button" class="chip-btn" data-minutes="15">15 min</button>
+          <button type="button" class="chip-btn" data-minutes="30">30 min</button>
+          <button type="button" class="chip-btn" data-minutes="45">45 min</button>
+          <button type="button" class="chip-btn" data-minutes="60">1 hour</button>
+          <button type="button" class="chip-btn" data-minutes="90">1½ hours</button>
+        </div>
+        <label class="field field-wide">
+          <span>Notes for your teacher <span class="optional">optional</span></span>
+          <textarea name="notes" rows="2" maxlength="2000" placeholder="e.g. Finished worksheet 4, stuck on question 7"></textarea>
+        </label>
+        <p class="form-message field-wide" id="study-message" role="status"></p>
+        <button type="submit" class="field-wide">Log it</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="week-header">
+        <h2>This week's report</h2>
+        <span class="week-total" id="week-total"></span>
+      </div>
+      <p class="section-hint" id="report-recipients"></p>
+      <ul class="session-list" id="session-list"></ul>
     </section>
   </main>
 
   <script src="snow.js"></script>
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+  <script src="../node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
