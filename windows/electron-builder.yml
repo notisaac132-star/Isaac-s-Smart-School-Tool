@@ -1,0 +1,20 @@
+# Windows build settings. The app code itself lives in ../src and is shared with the Mac build.
+appId: com.isaac.smartschooltool
+productName: Smart School Tool
+directories:
+  output: windows/dist
+files:
+  - src/**/*
+win:
+  icon: src/icon.png
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: Smart-School-Tool-Windows-Setup.${ext}
+portable:
+  artifactName: Smart-School-Tool-Windows-Portable.${ext}

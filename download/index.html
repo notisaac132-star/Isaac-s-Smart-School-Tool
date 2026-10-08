@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Download Smart School Tool</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #1d2433;
+      --muted: #6b7385;
+      --accent: #3b6cf6;
+      --accent-hover: #2b57d4;
+      --border: #dde2ee;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12151d;
+        --card: #1b2030;
+        --text: #e6e9f2;
+        --muted: #9aa3b8;
+        --border: #2c3347;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    main {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 3rem 16px;
+      text-align: center;
+    }
+    .logo { width: 96px; height: 96px; }
+    h1 { margin: 0.75rem 0 0.25rem; }
+    .tagline { color: var(--muted); margin: 0 0 2rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .card h2 { margin: 0 0 0.75rem; font-size: 1.2rem; }
+    .btn {
+      display: block;
+      text-align: center;
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 600;
+      text-decoration: none;
+      margin-bottom: 0.5rem;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn.secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      font-weight: 500;
+    }
+    .btn.secondary:hover { background: var(--accent); color: #fff; }
+    .steps { color: var(--muted); font-size: 0.95rem; padding-left: 1.2rem; margin: 1rem 0 0; }
+    .other { margin-top: 1.5rem; color: var(--muted); font-size: 0.95rem; }
+    .other a { color: var(--accent); }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
+      <rect x="16" y="16" width="480" height="480" rx="110" fill="#3b6cf6"/>
+      <path d="M256 130 L440 215 L256 300 L72 215 Z" fill="#fff"/>
+      <path d="M150 255 V340 C150 380 362 380 362 340 V255 L256 305 Z" fill="#fff"/>
+      <path d="M420 225 V330" stroke="#ffd34d" stroke-width="16" stroke-linecap="round"/>
+      <circle cx="420" cy="342" r="18" fill="#ffd34d"/>
+    </svg>
+    <h1>Smart School Tool</h1>
+    <p class="tagline">Keep your teachers' and tutors' emails in one place.</p>
+
+    <section class="card" id="windows" hidden>
+      <h2>Download for Windows</h2>
+      <a class="btn" href="https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Windows-Setup.exe">Download installer (.exe)</a>
+      <a class="btn secondary" href="https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Windows-Portable.exe">Portable version (no install)</a>
+      <ol class="steps">
+        <li>Open the downloaded file.</li>
+        <li>If Windows says "Windows protected your PC", click <strong>More info → Run anyway</strong>.</li>
+      </ol>
+    </section>
+
+    <section class="card" id="mac" hidden>
+      <h2>Download for Mac</h2>
+      <a class="btn" href="https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Mac.dmg">Download for Mac (.dmg)</a>
+      <a class="btn secondary" href="https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Mac.zip">Download as .zip</a>
+      <ol class="steps">
+        <li>Open the .dmg and drag <strong>Smart School Tool</strong> into Applications.</li>
+        <li>The first time, macOS may say it can't verify the app. Go to <strong>System Settings → Privacy &amp; Security</strong>, scroll down and click <strong>Open Anyway</strong>.</li>
+        <li>Works on both Apple Silicon (M1/M2/M3…) and Intel Macs.</li>
+      </ol>
+    </section>
+
+    <p class="other" id="other"></p>
+  </main>
+
+  <script>
+    // Pick the download that matches the visitor's computer.
+    function detectOS() {
+      const platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "";
+      const ua = navigator.userAgent || "";
+      const text = platform + " " + ua;
+      // iPads report themselves as "Mac" but have touch screens; they can't run the Mac app.
+      if (/Mac/i.test(text) && navigator.maxTouchPoints <= 1) return "mac";
+      if (/Win/i.test(text)) return "windows";
+      return "other";
+    }
+
+    const os = detectOS();
+    const other = document.getElementById("other");
+
+    function showOnly(id) {
+      document.getElementById(id).hidden = false;
+      const otherId = id === "mac" ? "windows" : "mac";
+      const label = otherId === "mac" ? "Mac" : "Windows";
+      other.innerHTML = "";
+      const link = document.createElement("a");
+      link.href = "#";
+      link.textContent = "Need the " + label + " version instead?";
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        document.getElementById(otherId).hidden = false;
+        other.hidden = true;
+      });
+      other.append(link);
+    }
+
+    if (os === "mac" || os === "windows") {
+      showOnly(os);
+    } else {
+      // Phones, tablets, Linux: show both so people can grab the right one for their computer.
+      document.getElementById("windows").hidden = false;
+      document.getElementById("mac").hidden = false;
+      other.textContent = "This app runs on Windows and Mac computers.";
+    }
+  </script>
+</body>
+</html>
