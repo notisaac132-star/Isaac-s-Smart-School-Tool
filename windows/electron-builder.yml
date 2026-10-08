@@ -18,3 +18,8 @@ nsis:
   artifactName: Smart-School-Tool-Windows-Setup.${ext}
 portable:
   artifactName: Smart-School-Tool-Windows-Portable.${ext}
+# Where installed apps look for updates (files are uploaded by the GitHub Actions release job).
+publish:
+  provider: github
+  owner: notisaac132-star
+  repo: Isaac-s-Smart-School-Tool

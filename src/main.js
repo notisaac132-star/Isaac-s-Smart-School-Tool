@@ -1,6 +1,7 @@
 // Electron entry point: opens the school tool in its own desktop window.
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
+const { setupAutoUpdates } = require("./updater");
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -29,11 +30,18 @@ function createWindow() {
     }
   });
 
+  // Show the version in the title bar so it's easy to see when an update has installed.
+  win.on("page-title-updated", (event) => {
+    event.preventDefault();
+    win.setTitle(`Smart School Tool ${app.getVersion()}`);
+  });
+
   win.loadFile(path.join(__dirname, "index.html"));
 }
 
 app.whenReady().then(() => {
   createWindow();
+  setupAutoUpdates();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
