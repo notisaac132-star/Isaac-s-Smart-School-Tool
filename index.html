@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart School Tool</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Isaac's Smart School Tool</h1>
+    <p class="tagline">Keep your school contacts in one place.</p>
+  </header>
+
+  <main>
+    <section class="card" id="teachers-section">
+      <h2>Teachers</h2>
+      <form class="contact-form" data-kind="teachers">
+        <input name="name" type="text" placeholder="Name (e.g. Ms. Smith)" required>
+        <input name="subject" type="text" placeholder="Subject (optional)">
+        <input name="email" type="email" placeholder="teacher@school.edu" required>
+        <button type="submit">Add teacher</button>
+      </form>
+      <ul class="contact-list" id="teachers-list"></ul>
+    </section>
+
+    <section class="card" id="tutors-section">
+      <h2>Tutors</h2>
+      <form class="contact-form" data-kind="tutors">
+        <input name="name" type="text" placeholder="Name (e.g. Alex)" required>
+        <input name="subject" type="text" placeholder="Subject (optional)">
+        <input name="email" type="email" placeholder="tutor@example.com" required>
+        <button type="submit">Add tutor</button>
+      </form>
+      <ul class="contact-list" id="tutors-list"></ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
