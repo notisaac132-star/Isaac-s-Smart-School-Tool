@@ -15,6 +15,8 @@ If there's no button, run this in Terminal instead:
 xattr -dr com.apple.quarantine "/Applications/Smart School Tool.app"
 ```
 
+You only need to do this once: after that the app installs its own updates, which macOS doesn't block.
+
 Full step-by-step instructions are in the [main README](../README.md).
 
 Build it yourself on a Mac: `npm install`, then `npm run build:mac`. The files appear in `mac/dist/`.

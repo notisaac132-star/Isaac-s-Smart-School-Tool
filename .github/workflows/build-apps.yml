@@ -88,7 +88,7 @@ jobs:
             **Mac says "Apple could not verify…"?** Click **Done**, then go to Apple menu → System Settings → Privacy & Security, scroll down and click **Open Anyway**. No button? Run this in Terminal: `xattr -dr com.apple.quarantine "/Applications/Smart School Tool.app"`
             **Windows says "Windows protected your PC"?** Click **More info → Run anyway**.
 
-            Already have the app? It updates itself on Windows, and on Mac it tells you when a new version is ready.
+            Already have the app? It updates itself (Windows installer and Mac).
 
             Built from ${{ github.sha }}.
           files: out/*
@@ -110,6 +110,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Share the falling-dots background with the site
+        run: cp src/snow.js download/snow.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: download

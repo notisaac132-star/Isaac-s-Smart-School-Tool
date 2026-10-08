@@ -46,14 +46,16 @@ Click **More info**, then **Run anyway**. Same reason: the app isn't signed with
 
 ## Updates
 
-- **Windows (installer):** the app updates itself in the background and asks you to restart when a new version is ready.
-- **Mac and Windows portable:** the app tells you when a new version is out and opens the download for you.
+- **Windows (installer) and Mac:** the app downloads updates by itself and asks you to restart when a new version is ready
+  (or updates the next time you close it). On Mac this means the "could not verify" popup only ever shows up for your first install.
+- **Windows portable:** the app tells you when a new version is out and opens the download for you.
 - The window title shows the version you have (e.g. *Smart School Tool 1.0.5*).
 
 `download/index.html` is a download page that detects whether you're on a Mac or Windows and shows the right button.
 
 ## Features
 
+- **Home screen**: a dark landing page with falling white dots, a greeting and today's date.
 - **Teacher & tutor emails**: add your teachers and tutors (name, optional subject, email). Click an email to start a message. Contacts are saved on your computer.
 
 ## How the project is laid out
