@@ -1,3 +1,5 @@
 node_modules/
 dist/
 download/snow.js
+download/config.js
+download/supabase.js

@@ -8,8 +8,54 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Log in / sign up -->
+  <main class="view" id="auth" hidden>
+    <div class="hero hero-compact">
+      <svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
+        <rect x="16" y="16" width="480" height="480" rx="110" fill="#3b6cf6"/>
+        <path d="M256 130 L440 215 L256 300 L72 215 Z" fill="#fff"/>
+        <path d="M150 255 V340 C150 380 362 380 362 340 V255 L256 305 Z" fill="#fff"/>
+        <path d="M420 225 V330" stroke="#ffd34d" stroke-width="16" stroke-linecap="round"/>
+        <circle cx="420" cy="342" r="18" fill="#ffd34d"/>
+      </svg>
+      <h1>Isaac's Smart School Tool</h1>
+      <p class="today">Log in to see your teachers and tutors on any computer.</p>
+    </div>
+
+    <section class="card auth-card">
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab" role="tab" data-mode="login" aria-selected="true">Log in</button>
+        <button type="button" class="tab" role="tab" data-mode="signup" aria-selected="false">Sign up</button>
+      </div>
+
+      <form id="auth-form" novalidate>
+        <label class="field" data-only="signup" hidden>
+          <span>Your name</span>
+          <input name="name" type="text" autocomplete="name" placeholder="Isaac">
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+        </label>
+        <label class="field" data-hide="reset">
+          <span>Password</span>
+          <input name="password" type="password" autocomplete="current-password" placeholder="At least 8 characters" required>
+        </label>
+        <p class="form-message" id="auth-message" role="status"></p>
+        <button type="submit" id="auth-submit">Log in</button>
+      </form>
+
+      <button type="button" class="link-btn" id="forgot-btn" data-only="login">Forgot password?</button>
+      <button type="button" class="link-btn" id="back-to-login" data-only="reset" hidden>← Back to log in</button>
+    </section>
+  </main>
+
   <!-- Landing page -->
-  <main class="view" id="home">
+  <main class="view" id="home" hidden>
+    <div class="account-bar">
+      <span class="account-email" id="account-email"></span>
+      <button type="button" class="ghost-btn" id="logout-btn">Log out</button>
+    </div>
     <div class="hero">
       <svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
         <rect x="16" y="16" width="480" height="480" rx="110" fill="#3b6cf6"/>
@@ -57,6 +103,7 @@
         <input name="email" type="email" placeholder="teacher@school.edu" required>
         <button type="submit">Add teacher</button>
       </form>
+      <p class="form-message" id="teachers-message" role="status"></p>
       <ul class="contact-list" id="teachers-list"></ul>
     </section>
 
@@ -68,11 +115,14 @@
         <input name="email" type="email" placeholder="tutor@example.com" required>
         <button type="submit">Add tutor</button>
       </form>
+      <p class="form-message" id="tutors-message" role="status"></p>
       <ul class="contact-list" id="tutors-list"></ul>
     </section>
   </main>
 
   <script src="snow.js"></script>
+  <script src="config.js"></script>
+  <script src="../node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -211,3 +211,83 @@ button:hover { background: var(--accent-hover); }
   .contact-form { grid-template-columns: 1fr; }
   .hero { padding-top: 2rem; }
 }
+
+/* Accounts */
+.hero-compact { padding: 2.5rem 0 1.5rem; }
+.hero-compact .logo { width: 64px; height: 64px; }
+.hero-compact h1 { margin-top: 1rem; font-size: clamp(1.5rem, 4vw, 2rem); }
+
+.auth-card { max-width: 420px; margin: 0 auto; }
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 1.1rem;
+  border-radius: 10px;
+  background: var(--field);
+  border: 1px solid var(--border);
+}
+
+.tab {
+  background: transparent;
+  color: var(--muted);
+  padding: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.tab:hover { background: rgba(255, 255, 255, 0.05); color: var(--text); }
+.tab[aria-selected="true"] { background: var(--accent); color: #fff; }
+
+#auth-form { display: grid; gap: 0.75rem; }
+
+.field { display: grid; gap: 0.3rem; }
+.field span { font-size: 0.9rem; color: var(--muted); }
+
+.form-message { margin: 0; font-size: 0.92rem; min-height: 0; }
+.form-message:empty { display: none; }
+.form-message.error { color: var(--danger); }
+.form-message.success { color: #5fd38d; }
+.card .form-message { margin-top: 0.75rem; }
+
+button:disabled { opacity: 0.6; cursor: default; }
+
+.link-btn {
+  display: block;
+  margin: 0.9rem auto 0;
+  background: none;
+  color: var(--accent-hover);
+  padding: 0.2rem;
+  font-size: 0.92rem;
+}
+
+.link-btn:hover { background: none; text-decoration: underline; }
+
+.account-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.account-email {
+  color: var(--muted);
+  font-size: 0.92rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ghost-btn {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.8rem;
+  font-size: 0.92rem;
+  flex-shrink: 0;
+}
+
+.ghost-btn:hover { background: var(--card); border-color: var(--accent); }
+.account-bar + .hero { padding-top: 2rem; }
