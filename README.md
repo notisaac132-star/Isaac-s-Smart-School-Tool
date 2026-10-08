@@ -56,7 +56,9 @@ Click **More info**, then **Run anyway**. Same reason: the app isn't signed with
 ## Features
 
 - **Home screen**: a dark landing page with falling white dots, a greeting and today's date.
-- **Teacher & tutor emails**: add your teachers and tutors (name, optional subject, email). Click an email to start a message. Contacts are saved on your computer.
+- **Accounts**: sign up and log in with email and password. Your teachers and tutors are saved to your account,
+  so they show up on any computer you log in on. Forgot your password? Use **Forgot password?** on the log-in screen.
+- **Teacher & tutor emails**: add your teachers and tutors (name, optional subject, email). Click an email to start a message.
 
 ## How the project is laid out
 
@@ -64,8 +66,12 @@ Click **More info**, then **Run anyway**. Same reason: the app isn't signed with
 src/        the app itself (shared by both versions)
 windows/    Windows build settings + install notes
 mac/        Mac build settings + install notes
-download/   the "pick your computer" download page
+download/   the "pick your computer" download page and the password-reset page
+supabase/   database setup for accounts (schema.sql)
 ```
+
+Accounts run on [Supabase](https://supabase.com). The project's URL and public (anon/publishable) key live in
+`src/config.js`; what each account can see is enforced by row level security in `supabase/schema.sql`.
 
 Every push to GitHub rebuilds **both** the Windows and Mac apps from `src/` and publishes them as the latest release
 (`.github/workflows/build-apps.yml`), so a change to the app updates both versions automatically.
