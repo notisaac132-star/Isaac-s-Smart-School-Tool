@@ -1,0 +1,65 @@
+{
+  "name": "smart-school-tool",
+  "productName": "Smart School Tool",
+  "version": "1.0.0",
+  "description": "Isaac's Smart School Tool",
+  "main": "main.js",
+  "author": "Isaac",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win",
+    "dist:zip": "electron-builder --win zip"
+  },
+  "build": {
+    "appId": "com.isaac.smartschooltool",
+    "productName": "Smart School Tool",
+    "files": [
+      "main.js",
+      "index.html",
+      "style.css",
+      "app.js",
+      "build/icon.png"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Smart-School-Tool-${version}-win.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "Smart-School-Tool-Setup-${version}.exe"
+    },
+    "portable": {
+      "artifactName": "Smart-School-Tool-Portable-${version}.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3"
+  }
+}
