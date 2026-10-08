@@ -18,3 +18,8 @@ mac:
   # Ad-hoc signature (no paid Apple Developer account). Required for the app to open on Apple Silicon.
   identity: "-"
   hardenedRuntime: false
+# Where installed apps look for updates (files are uploaded by the GitHub Actions release job).
+publish:
+  provider: github
+  owner: notisaac132-star
+  repo: Isaac-s-Smart-School-Tool

@@ -1,8 +1,9 @@
 name: Build apps
 
-# Every push rebuilds BOTH the Windows and Mac apps from the shared src/ folder
-# and publishes them as the newest GitHub Release, so the download links in
-# download/index.html and the README always point at the latest version.
+# Every push rebuilds BOTH the Windows and Mac apps from the shared src/ folder.
+# Pushes to the default branch also publish them as the newest GitHub Release
+# (version 1.0.<run number>), which is where the download links and the apps'
+# built-in auto-updater get the latest version from.
 on:
   push:
     branches: ["**"]
@@ -25,13 +26,18 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Set version
+        run: npm version 1.0.${{ github.run_number }} --no-git-tag-version
       - run: npm run build:windows
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: windows/dist/*.exe
+          path: |
+            windows/dist/*.exe
+            windows/dist/*.blockmap
+            windows/dist/latest.yml
           if-no-files-found: error
 
   mac:
@@ -43,6 +49,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Set version
+        run: npm version 1.0.${{ github.run_number }} --no-git-tag-version
       - run: npm run build:mac
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
@@ -52,9 +60,12 @@ jobs:
           path: |
             mac/dist/*.dmg
             mac/dist/*.zip
+            mac/dist/*.blockmap
+            mac/dist/latest-mac.yml
           if-no-files-found: error
 
   release:
+    if: github.ref_name == github.event.repository.default_branch
     needs: [windows, mac]
     runs-on: ubuntu-latest
     permissions:
@@ -66,15 +77,20 @@ jobs:
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: build-${{ github.run_number }}
-          name: Smart School Tool (build ${{ github.run_number }})
+          tag_name: v1.0.${{ github.run_number }}
+          name: Smart School Tool 1.0.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
           make_latest: "true"
           body: |
             **Windows:** download `Smart-School-Tool-Windows-Setup.exe` (installer) or `Smart-School-Tool-Windows-Portable.exe` (no install).
             **Mac:** download `Smart-School-Tool-Mac.dmg`, open it and drag the app into Applications.
 
-            Built from ${{ github.sha }} on `${{ github.ref_name }}`.
+            **Mac says "Apple could not verify…"?** Click **Done**, then go to Apple menu → System Settings → Privacy & Security, scroll down and click **Open Anyway**. No button? Run this in Terminal: `xattr -dr com.apple.quarantine "/Applications/Smart School Tool.app"`
+            **Windows says "Windows protected your PC"?** Click **More info → Run anyway**.
+
+            Already have the app? It updates itself on Windows, and on Mac it tells you when a new version is ready.
+
+            Built from ${{ github.sha }}.
           files: out/*
 
   # Hosts the download page (download/index.html) on GitHub Pages.
