@@ -12,6 +12,7 @@ function createWindow() {
     title: "Smart School Tool",
     icon: path.join(__dirname, "icon.png"),
     autoHideMenuBar: true,
+    backgroundColor: "#0b0e16",
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

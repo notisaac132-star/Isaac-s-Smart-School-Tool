@@ -1,55 +1,142 @@
 :root {
-  --bg: #f4f6fb;
-  --card: #ffffff;
-  --text: #1d2433;
-  --muted: #6b7385;
-  --accent: #3b6cf6;
-  --accent-hover: #2b57d4;
-  --border: #dde2ee;
-  --danger: #d64545;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #12151d;
-    --card: #1b2030;
-    --text: #e6e9f2;
-    --muted: #9aa3b8;
-    --border: #2c3347;
-  }
+  color-scheme: dark;
+  --bg: #0b0e16;
+  --bg-glow: #141a2b;
+  --card: rgba(24, 29, 44, 0.78);
+  --card-solid: #181d2c;
+  --field: rgba(10, 13, 21, 0.7);
+  --text: #e8ebf3;
+  --muted: #98a1b7;
+  --accent: #4f7dff;
+  --accent-hover: #6b91ff;
+  --border: rgba(255, 255, 255, 0.09);
+  --danger: #ff6b6b;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
+  min-height: 100vh;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
+  background: radial-gradient(ellipse at top, var(--bg-glow), var(--bg) 70%) fixed;
+  background-color: var(--bg);
   color: var(--text);
   line-height: 1.5;
 }
 
-header {
-  text-align: center;
-  padding: 2rem 1rem 1rem;
+/* Falling dots canvas (snow.js) sits behind everything. */
+.snow {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
 }
 
-header h1 { margin: 0; }
-.tagline { margin: 0.25rem 0 0; color: var(--muted); }
-
-main {
+.view {
+  position: relative;
+  z-index: 1;
   max-width: 720px;
   margin: 0 auto;
-  padding: 1rem;
-  display: grid;
-  gap: 1.25rem;
+  padding: 1.5rem 16px 3rem;
 }
+
+[hidden] { display: none !important; }
+
+/* Landing page */
+.hero {
+  text-align: center;
+  padding: 3.5rem 0 2.5rem;
+}
+
+.logo {
+  width: 88px;
+  height: 88px;
+  filter: drop-shadow(0 8px 24px rgba(79, 125, 255, 0.35));
+}
+
+.greeting {
+  margin: 1.25rem 0 0;
+  color: var(--accent-hover);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.hero h1 {
+  margin: 0.25rem 0;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  line-height: 1.15;
+}
+
+.today { margin: 0; color: var(--muted); }
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1.25rem;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  backdrop-filter: blur(6px);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+a.tile:hover, a.tile:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.tile-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--accent-hover);
+  margin-bottom: 0.4rem;
+}
+
+.tile-title { font-weight: 600; font-size: 1.05rem; }
+.tile-sub { color: var(--muted); font-size: 0.92rem; }
+.tile-soon { opacity: 0.55; }
+
+/* Inner pages */
+.view-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.5rem 0 1.25rem;
+}
+
+.view-header h1 { margin: 0; font-size: 1.5rem; }
+
+.back {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  white-space: nowrap;
+}
+
+.back:hover { color: var(--text); border-color: var(--accent); }
 
 .card {
   background: var(--card);
+  backdrop-filter: blur(6px);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 1.25rem;
+  margin-bottom: 1.25rem;
 }
 
 .card h2 { margin-top: 0; }
@@ -68,9 +155,12 @@ input {
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 1rem;
-  background: var(--bg);
+  background: var(--field);
   color: var(--text);
 }
+
+input::placeholder { color: #6c7488; }
+input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
 
 button {
   padding: 0.6rem 1rem;
@@ -102,7 +192,7 @@ button:hover { background: var(--accent-hover); }
 .contact-info { min-width: 0; }
 .contact-name { font-weight: 600; }
 .contact-subject { color: var(--muted); font-weight: normal; }
-.contact-info a { color: var(--accent); word-break: break-all; }
+.contact-info a { color: var(--accent-hover); word-break: break-all; }
 
 .remove-btn {
   background: transparent;
@@ -119,4 +209,5 @@ button:hover { background: var(--accent-hover); }
 
 @media (max-width: 480px) {
   .contact-form { grid-template-columns: 1fr; }
+  .hero { padding-top: 2rem; }
 }

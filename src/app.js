@@ -23,7 +23,20 @@ function saveContacts() {
 
 const contacts = loadContacts();
 
+function plural(count, word) {
+  return `${count} ${word}${count === 1 ? "" : "s"}`;
+}
+
+function updateSummary() {
+  const summary = document.getElementById("contacts-summary");
+  const { teachers, tutors } = contacts;
+  summary.textContent = teachers.length + tutors.length === 0
+    ? "Add your teachers' and tutors' emails"
+    : `${plural(teachers.length, "teacher")} · ${plural(tutors.length, "tutor")}`;
+}
+
 function render(kind) {
+  updateSummary();
   const list = document.getElementById(`${kind}-list`);
   list.replaceChildren();
 
@@ -91,5 +104,29 @@ document.querySelectorAll(".contact-form").forEach((form) => {
   });
 });
 
+// Screens: the landing page (#home) and the contacts page (#contacts).
+function showView() {
+  const id = location.hash === "#contacts" ? "contacts" : "home";
+  document.querySelectorAll(".view").forEach((view) => {
+    view.hidden = view.id !== id;
+  });
+  window.scrollTo(0, 0);
+}
+
+function greet() {
+  const hour = new Date().getHours();
+  const part = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+  document.getElementById("greeting").textContent = `Good ${part}`;
+  document.getElementById("today").textContent = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+window.addEventListener("hashchange", showView);
+
 render("teachers");
 render("tutors");
+greet();
+showView();
