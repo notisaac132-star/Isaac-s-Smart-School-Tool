@@ -9,7 +9,7 @@ function createWindow() {
     minWidth: 360,
     minHeight: 500,
     title: "Smart School Tool",
-    icon: path.join(__dirname, "build", "icon.png"),
+    icon: path.join(__dirname, "icon.png"),
     autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true,

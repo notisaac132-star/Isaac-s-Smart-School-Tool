@@ -1,0 +1,99 @@
+name: Build apps
+
+# Every push rebuilds BOTH the Windows and Mac apps from the shared src/ folder
+# and publishes them as the newest GitHub Release, so the download links in
+# download/index.html and the README always point at the latest version.
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-apps
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:windows
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: windows/dist/*.exe
+          if-no-files-found: error
+
+  mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:mac
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac
+          path: |
+            mac/dist/*.dmg
+            mac/dist/*.zip
+          if-no-files-found: error
+
+  release:
+    needs: [windows, mac]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Smart School Tool (build ${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          make_latest: "true"
+          body: |
+            **Windows:** download `Smart-School-Tool-Windows-Setup.exe` (installer) or `Smart-School-Tool-Windows-Portable.exe` (no install).
+            **Mac:** download `Smart-School-Tool-Mac.dmg`, open it and drag the app into Applications.
+
+            Built from ${{ github.sha }} on `${{ github.ref_name }}`.
+          files: out/*
+
+  # Hosts the download page (download/index.html) on GitHub Pages.
+  # Runs only on the default branch; Pages must be enabled with source "GitHub Actions".
+  pages:
+    if: github.ref_name == github.event.repository.default_branch
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: download
+      - id: deploy
+        uses: actions/deploy-pages@v4
