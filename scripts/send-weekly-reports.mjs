@@ -1,9 +1,11 @@
 // Emails each student's unreported study sessions to their teachers, then marks them as reported.
 // Run weekly by .github/workflows/weekly-reports.yml.
 //
-// Needs: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GMAIL_USER, GMAIL_APP_PASSWORD.
+// Needs: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and an email account to send from:
+//   Brevo (default): SMTP_LOGIN, SMTP_KEY and EMAIL_FROM (a sender address verified in Brevo).
+//   Any other SMTP server: also set SMTP_HOST (and SMTP_PORT if it isn't 587).
+//   Gmail instead: GMAIL_USER and GMAIL_APP_PASSWORD.
 // DRY_RUN=1 builds the emails and prints counts without sending or changing anything.
-// SMTP_URL (optional) sends through another mail server instead of Gmail, e.g. smtp://user:pass@host:587.
 //
 // The repository is public, so this only ever logs counts, never names or email addresses.
 
@@ -11,7 +13,11 @@ import { createClient } from "@supabase/supabase-js";
 import nodemailer from "nodemailer";
 import { buildReport } from "./report.mjs";
 
-const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, SMTP_URL } = process.env;
+const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SMTP_LOGIN, SMTP_KEY, GMAIL_USER, GMAIL_APP_PASSWORD } = process.env;
+const SMTP_HOST = process.env.SMTP_HOST || "smtp-relay.brevo.com";
+const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
+const useGmail = !SMTP_LOGIN && Boolean(GMAIL_USER);
+const EMAIL_FROM = process.env.EMAIL_FROM || GMAIL_USER;
 const DRY_RUN = process.env.DRY_RUN === "1" || process.env.DRY_RUN === "true";
 
 function requireEnv(names) {
@@ -25,13 +31,16 @@ function requireEnv(names) {
 requireEnv([
   "SUPABASE_URL",
   "SUPABASE_SERVICE_ROLE_KEY",
-  ...(DRY_RUN ? [] : SMTP_URL ? ["GMAIL_USER"] : ["GMAIL_USER", "GMAIL_APP_PASSWORD"]),
+  ...(DRY_RUN ? [] : useGmail ? ["GMAIL_USER", "GMAIL_APP_PASSWORD"] : ["SMTP_LOGIN", "SMTP_KEY", "EMAIL_FROM"]),
 ]);
 
 const db = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
-const mailer = DRY_RUN
-  ? null
-  : nodemailer.createTransport(SMTP_URL || { service: "gmail", auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD } });
+let mailer = null;
+if (!DRY_RUN) {
+  mailer = useGmail
+    ? nodemailer.createTransport({ service: "gmail", auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD } })
+    : nodemailer.createTransport({ host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_PORT === 465, auth: { user: SMTP_LOGIN, pass: SMTP_KEY } });
+}
 
 // Emails one student's sessions to each of their report recipients. Returns "sent", "skipped" or "failed".
 async function reportStudent(userId, studentSessions, stats) {
@@ -71,7 +80,7 @@ async function reportStudent(userId, studentSessions, stats) {
     }
     try {
       await mailer.sendMail({
-        from: { name: "Smart School Tool", address: GMAIL_USER },
+        from: { name: "Smart School Tool", address: EMAIL_FROM },
         to: { name: teacher.name, address: teacher.email },
         replyTo: report.replyTo,
         subject: report.subject,
