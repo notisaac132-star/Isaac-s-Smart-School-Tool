@@ -1,93 +1,112 @@
-# Isaac-s-Smart-School-Tool
-Isaac's Smart School Tool
+<div align="center">
 
-A simple school app for Chromebooks, Windows and Mac.
+<img src="chromebook/icons/icon-192.png" width="96" alt="">
+
+# Isaac's Smart School Tool
+
+**Log your study time and send your teachers a weekly report in one click.**
+
+For **Chromebook**, **Windows** and **Mac** · Free · Updates itself
+
+### [⬇ Get the app](https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/)
+
+<img src="docs/screenshot-home.png" width="820" alt="The home screen: a row of big app icons with falling white dots in the background">
+
+</div>
 
 ## Download
 
-| Computer | Download |
+| Computer | Get it |
 | --- | --- |
-| **Chromebook** | [Open & install](https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/app/), then click **⬇ Install app** ([how](chromebook/README.md)) |
-| **Windows** | [Installer (.exe)](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Windows-Setup.exe) · [Portable (.exe)](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Windows-Portable.exe) |
-| **Mac** | [Mac app (.dmg)](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Mac.dmg) |
+| 💻 **Chromebook** | [**Open & install**](https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/app/), then click **⬇ Install app** |
+| 🪟 **Windows** | [**Installer (.exe)**](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Windows-Setup.exe) · [Portable, no install (.exe)](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Windows-Portable.exe) |
+| 🍎 **Mac** | [**Mac app (.dmg)**](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Mac.dmg) (Apple Silicon and Intel) |
 
-Easiest: open the download page, which picks the right file for your computer:
-**https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/**
+Not sure which? The [download page](https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/) picks the right one for your computer.
 
-These links always point to the newest version. Once installed, the app keeps itself up to date (see [Updates](#updates)).
+## What it does
 
-## ⚠️ Mac: "Apple could not verify…" / app won't open
+- 🎮 **Console-style home screen.** Big app icons you move through with the arrow keys, mouse, touch or a game controller, on a dark background with falling white dots.
+- ⏱️ **Log study time.** What you studied, how long, which day, and a note for your teacher.
+- ✈️ **Send your weekly report.** One click opens an email (Proton Mail, Gmail, Outlook or your email app) with your study time per subject, each session and the total, already addressed to your teachers. Send it on Sunday or **early** any day; the next report only includes what's new.
+- 👥 **Teachers & tutors.** Add as many as you like and choose who gets the report.
+- 🔐 **Your own account.** Sign up with email and password; everything follows you to any computer you log in on.
+- 💖 **Donate.** Support the project with Cash App or PayPal.
+- 🔄 **Always up to date.** Every version updates itself.
 
-macOS blocks apps that aren't registered with Apple (a $99/year Apple Developer account).
-The app is safe; you just have to allow it **once**:
+<table>
+  <tr>
+    <td><img src="docs/screenshot-study.png" alt="Your next report: a list of study sessions with a total, and a Send report early button"></td>
+    <td><img src="docs/screenshot-donate.png" alt="The Donate page with Cash App and PayPal buttons and amounts from $5 to $100"></td>
+  </tr>
+</table>
 
-**Option 1: Open Anyway (recommended)**
-1. Drag **Smart School Tool** from the .dmg into your **Applications** folder.
-2. Double-click it. When the warning appears, click **Done** (not "Move to Trash").
-3. Go to **Apple menu → System Settings → Privacy & Security**.
-4. Scroll down to **Security**. Next to *"Smart School Tool" was blocked…* click **Open Anyway**.
-5. Enter your password (or use Touch ID), then click **Open Anyway** again.
+## Installing
 
-From then on it opens normally. The button only appears for about an hour after step 2, so if it's missing, repeat step 2.
+<details>
+<summary><b>💻 Chromebook</b></summary>
 
-**Option 2: Terminal (if there's no Open Anyway button)**
-1. Open **Terminal** (⌘ Space, type `Terminal`, press Enter).
-2. Paste this and press Enter:
-   ```sh
-   xattr -dr com.apple.quarantine "/Applications/Smart School Tool.app"
-   ```
-3. Open the app from Applications.
+1. Open **https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/app/** in Chrome.
+2. Click **⬇ Install app** at the bottom of the screen, or the install icon at the right end of the address bar.
+3. It's now in your launcher with its own window.
 
-This only unblocks this one app. You do **not** need to turn off your Mac's security
-(avoid `spctl --master-disable` / "Allow apps from anywhere"; that would let *any* unverified app run).
+School Chromebook won't let you install apps? It works in a normal Chrome tab too. Just bookmark it.
+</details>
 
-## Windows: "Windows protected your PC"
+<details>
+<summary><b>🪟 Windows: "Windows protected your PC"</b></summary>
 
-Click **More info**, then **Run anyway**. Same reason: the app isn't signed with a paid certificate.
+Click **More info**, then **Run anyway**. Windows shows this for apps that aren't signed with a paid certificate.
+</details>
+
+<details>
+<summary><b>🍎 Mac: "Apple could not verify…"</b></summary>
+
+macOS blocks apps that aren't registered with Apple. You only have to allow it **once**:
+
+1. Drag **Smart School Tool** from the .dmg into **Applications**, then double-click it.
+2. When the warning appears, click **Done** (not "Move to Trash").
+3. Go to **Apple menu → System Settings → Privacy & Security**, scroll to **Security**, and click **Open Anyway**.
+
+No **Open Anyway** button? Open **Terminal** and run:
+
+```sh
+xattr -dr com.apple.quarantine "/Applications/Smart School Tool.app"
+```
+
+This only unblocks this one app. You don't need "Allow apps from anywhere".
+</details>
 
 ## Updates
 
-- **Chromebook:** updates itself every time it opens (online). Nothing to re-download.
-- **Windows (installer) and Mac:** the app downloads updates by itself and asks you to restart when a new version is ready
-  (or updates the next time you close it). On Mac this means the "could not verify" popup only ever shows up for your first install.
-- **Windows portable:** the app tells you when a new version is out and opens the download for you.
-- The window title shows the version you have (e.g. *Smart School Tool 1.0.5*).
+| | How it updates |
+| --- | --- |
+| **Chromebook** | Loads the newest version every time it opens. Nothing to download. |
+| **Windows (installer) & Mac** | Downloads updates by itself and asks you to restart. |
+| **Windows portable** | Tells you a new version is out and opens the download. |
 
-`download/index.html` is a download page that detects whether you're on a Mac or Windows and shows the right button.
+The version number is in the window title (Windows/Mac) or the bottom-left of the home screen (Chromebook).
 
-## Features
-
-- **Home screen**: a dark landing page with falling white dots, a greeting and today's date.
-- **Weekly study reports**: log what you studied and for how long. **Open email to teachers** opens a new email
-  (Proton Mail, Gmail, Outlook or your computer's email app) with your last 7 days of study, time per subject and the
-  total, addressed to your teachers. Check it and press Send; it comes from your own email address.
-- **Accounts**: sign up and log in with email and password. Your teachers and tutors are saved to your account,
-  so they show up on any computer you log in on. Forgot your password? Use **Forgot password?** on the log-in screen.
-- **Teacher & tutor emails**: add your teachers and tutors (name, optional subject, email). Click an email to start a message.
-
-## How the project is laid out
+## For developers
 
 ```
-src/        the app itself (shared by every version)
-chromebook/ Chromebook (installable web app) files + install notes
-windows/    Windows build settings + install notes
-mac/        Mac build settings + install notes
-download/   the "pick your computer" download page and the password-reset page
-            (the Chromebook app is built into download/app/ when the site is published)
-supabase/   database setup for accounts (schema.sql)
+src/         the app itself, shared by every version
+chromebook/  Chromebook (installable web app) files
+windows/     Windows build settings
+mac/         Mac build settings
+download/    download page and password-reset page (GitHub Pages)
+supabase/    database setup for accounts (schema.sql)
+docs/        screenshots for this page
 ```
 
-Accounts run on [Supabase](https://supabase.com). The project's URL and public (anon/publishable) key live in
-`src/config.js`; what each account can see is enforced by row level security in `supabase/schema.sql`.
-
-Every push to GitHub rebuilds **both** the Windows and Mac apps from `src/` and publishes them as the latest release
-(`.github/workflows/build-apps.yml`), so a change to the app updates both versions automatically.
-
-## Developing
+Every push to `main` builds the Windows and Mac apps and publishes them as the latest release, and publishes the
+Chromebook app and download page to GitHub Pages (`.github/workflows/build-apps.yml`). Accounts and data use
+[Supabase](https://supabase.com); each account can only see its own data (row level security in `supabase/schema.sql`).
 
 ```sh
 npm install
-npm start              # run the app
-npm run build:windows  # build the Windows .exe files (run on Windows)
-npm run build:mac      # build the Mac .dmg (run on a Mac)
+npm start                                  # run the desktop app
+npm run build:windows                      # Windows .exe files (run on Windows)
+npm run build:mac                          # Mac .dmg (run on a Mac)
+sh chromebook/build.sh out/app 1.0.0       # Chromebook app into out/app
 ```

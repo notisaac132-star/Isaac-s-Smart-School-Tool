@@ -8,6 +8,10 @@ name: Build apps
 on:
   push:
     branches: ["**"]
+    # Text and screenshot changes don't change the app, so they don't make a new version.
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   workflow_dispatch:
 
 permissions:
