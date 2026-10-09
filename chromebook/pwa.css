@@ -1,0 +1,13 @@
+/* Chromebook (web) version only. */
+.version-tag { margin-right: auto; opacity: 0.7; }
+.install-btn {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}

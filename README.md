@@ -1,12 +1,13 @@
 # Isaac-s-Smart-School-Tool
 Isaac's Smart School Tool
 
-A simple school app for Windows and Mac.
+A simple school app for Chromebooks, Windows and Mac.
 
 ## Download
 
 | Computer | Download |
 | --- | --- |
+| **Chromebook** | [Open & install](https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/app/), then click **⬇ Install app** ([how](chromebook/README.md)) |
 | **Windows** | [Installer (.exe)](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Windows-Setup.exe) · [Portable (.exe)](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Windows-Portable.exe) |
 | **Mac** | [Mac app (.dmg)](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Mac.dmg) |
 
@@ -46,6 +47,7 @@ Click **More info**, then **Run anyway**. Same reason: the app isn't signed with
 
 ## Updates
 
+- **Chromebook:** updates itself every time it opens (online). Nothing to re-download.
 - **Windows (installer) and Mac:** the app downloads updates by itself and asks you to restart when a new version is ready
   (or updates the next time you close it). On Mac this means the "could not verify" popup only ever shows up for your first install.
 - **Windows portable:** the app tells you when a new version is out and opens the download for you.
@@ -66,10 +68,12 @@ Click **More info**, then **Run anyway**. Same reason: the app isn't signed with
 ## How the project is laid out
 
 ```
-src/        the app itself (shared by both versions)
+src/        the app itself (shared by every version)
+chromebook/ Chromebook (installable web app) files + install notes
 windows/    Windows build settings + install notes
 mac/        Mac build settings + install notes
 download/   the "pick your computer" download page and the password-reset page
+            (the Chromebook app is built into download/app/ when the site is published)
 supabase/   database setup for accounts (schema.sql)
 ```
 
