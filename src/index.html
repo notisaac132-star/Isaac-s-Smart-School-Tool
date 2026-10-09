@@ -210,10 +210,10 @@
 
     <section class="card">
       <div class="week-header">
-        <h2>Your weekly report</h2>
+        <h2>Your next report</h2>
         <span class="week-total" id="week-total"></span>
       </div>
-      <p class="section-hint">Everything you studied in the last 7 days.</p>
+      <p class="section-hint" id="report-period">Everything you studied in the last 7 days.</p>
       <ul class="session-list" id="session-list"></ul>
     </section>
 
@@ -233,6 +233,15 @@
         <button type="button" id="send-report">Open email to teachers</button>
       </div>
       <p class="form-message" id="send-message" role="status"></p>
+      <div class="sent-confirm" id="sent-confirm" hidden>
+        <span>Did you send it?</span>
+        <button type="button" id="confirm-sent">Yes, I sent it</button>
+        <button type="button" class="ghost-btn" id="not-sent">Not yet</button>
+      </div>
+      <p class="sent-status" id="sent-status">
+        <span id="sent-status-text"></span>
+        <button type="button" class="link-btn inline" id="undo-sent" hidden>Undo</button>
+      </p>
 
       <details class="email-preview" id="email-preview">
         <summary>See the email (and copy it if the new tab opens empty)</summary>

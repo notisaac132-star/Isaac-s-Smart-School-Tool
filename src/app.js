@@ -160,9 +160,14 @@ async function onSignedIn(user) {
   currentUser = user;
   $("account-email").textContent = user.email;
   greet();
+  if (!isNewLogin) {
+    // Same account, just refreshed (new token or profile change): update in place without moving the page.
+    renderSessions();
+    return;
+  }
   $("auth-form").reset();
   showView();
-  if (isNewLogin) {
+  {
     await importLegacyContacts();
     await Promise.all([loadContacts(), loadSessions()]);
     showView();
@@ -379,7 +384,7 @@ function joinNames(names) {
 async function loadSessions() {
   const { data, error } = await db
     .from("study_sessions")
-    .select("id, subject, minutes, studied_on, notes")
+    .select("id, subject, minutes, studied_on, notes, created_at")
     .gte("studied_on", reportStartKey())
     .order("studied_on", { ascending: true })
     .order("created_at", { ascending: true });
@@ -389,6 +394,56 @@ async function loadSessions() {
   }
   sessions = data;
   renderSessions();
+}
+
+// ----- Sending early: the account remembers when the last report was sent -----
+// Stored in the account's profile (so it follows you to other computers). The next report only
+// includes study time logged after that, so nothing is sent twice.
+
+function lastSentAt() {
+  const value = currentUser && currentUser.user_metadata && currentUser.user_metadata.last_report_sent;
+  return value ? new Date(value) : null;
+}
+
+function pendingSessions() {
+  const sent = lastSentAt();
+  return sent ? sessions.filter((s) => new Date(s.created_at) > sent) : sessions;
+}
+
+// Start of this week (Monday 00:00), for "already sent this week".
+function startOfWeek() {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+  return date;
+}
+
+function sentThisWeek() {
+  const sent = lastSentAt();
+  return Boolean(sent && sent >= startOfWeek());
+}
+
+function formatSentAt(date) {
+  return date.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+let previousSentValue; // for Undo
+
+async function setLastSent(value) {
+  const { data, error } = await db.auth.updateUser({ data: { last_report_sent: value } });
+  if (error) throw error;
+  if (data && data.user) currentUser = data.user;
+  else currentUser = { ...currentUser, user_metadata: { ...currentUser.user_metadata, last_report_sent: value } };
+  renderSessions();
+}
+
+function renderSentStatus() {
+  const sent = lastSentAt();
+  const isSunday = new Date().getDay() === 0;
+  $("send-report").textContent = isSunday ? "Send weekly report" : "Send report early";
+  $("sent-status-text").textContent = sent
+    ? `Last report sent ${formatSentAt(sent)}.`
+    : "You haven't sent a report yet.";
 }
 
 function reportRecipients() {
@@ -408,9 +463,18 @@ function renderRecipients() {
 function renderSendSummary() {
   const recipients = reportRecipients();
   const isSunday = new Date().getDay() === 0;
-  if (recipients.length === 0) $("send-summary").textContent = "Switch on \"Weekly report\" for a teacher first";
-  else if (isSunday && sessions.length) $("send-summary").textContent = "It's Sunday: time to send it!";
-  else $("send-summary").textContent = `Goes to ${joinNames(recipients.map((c) => c.name))}`;
+  const pending = pendingSessions().length;
+  const sent = lastSentAt();
+  let text;
+  if (recipients.length === 0) text = "Switch on \"Weekly report\" for a teacher first";
+  else if (sentThisWeek()) {
+    const day = sent.toLocaleDateString(undefined, { weekday: "short" });
+    text = pending ? `Sent ${day} ✓ · ${plural(pending, "new session")} since` : `Sent ${day} ✓`;
+  } else if (isSunday && pending) text = "It's Sunday: time to send it!";
+  else if (pending) text = `Ready: you can send it early`;
+  else text = `Goes to ${joinNames(recipients.map((c) => c.name))}`;
+  $("send-summary").textContent = text;
+  renderSentStatus();
   refreshHome();
 }
 
@@ -421,20 +485,30 @@ function renderSubjectSuggestions() {
 }
 
 function renderSessions() {
-  const total = sessions.reduce((sum, s) => sum + s.minutes, 0);
-  $("week-total").textContent = total ? `Total: ${formatMinutes(total)}` : "";
-  $("study-summary").textContent = total
-    ? `${formatMinutes(total)} in the last 7 days`
+  const weekTotal = sessions.reduce((sum, s) => sum + s.minutes, 0);
+  $("study-summary").textContent = weekTotal
+    ? `${formatMinutes(weekTotal)} in the last 7 days`
     : "Nothing logged in the last 7 days";
+
+  const pending = pendingSessions();
+  const total = pending.reduce((sum, s) => sum + s.minutes, 0);
+  $("week-total").textContent = total ? `Total: ${formatMinutes(total)}` : "";
+  const sent = lastSentAt();
+  $("report-period").textContent = sent && sent > UI.parseDateKey(reportStartKey())
+    ? `What you've studied since your last report (${formatSentAt(sent)}).`
+    : "Everything you studied in the last 7 days.";
   renderSendSummary();
   renderEmailPreview();
 
   const list = $("session-list");
-  if (sessions.length === 0) {
-    list.replaceChildren(UI.h("li", { class: "empty", text: "Nothing logged in the last 7 days. Add a study session above." }));
+  if (pending.length === 0) {
+    list.replaceChildren(UI.h("li", {
+      class: "empty",
+      text: sent && sessions.length ? "Nothing new since your last report. Log more study time above." : "Nothing logged in the last 7 days. Add a study session above.",
+    }));
     return;
   }
-  list.replaceChildren(...sessions.map((session) => {
+  list.replaceChildren(...pending.map((session) => {
     const day = shortDay(session.studied_on);
     const remove = UI.h("button", { type: "button", class: "remove-btn", text: "Remove" });
     remove.addEventListener("click", async () => {
@@ -468,7 +542,7 @@ function prepareStudyForm() {
 
 function buildReportEmail() {
   const recipients = reportRecipients();
-  const sorted = [...sessions].sort((a, b) => a.studied_on.localeCompare(b.studied_on));
+  const sorted = [...pendingSessions()].sort((a, b) => a.studied_on.localeCompare(b.studied_on));
   const total = sorted.reduce((sum, s) => sum + s.minutes, 0);
   const bySubject = new Map();
   sorted.forEach((s) => bySubject.set(s.subject, (bySubject.get(s.subject) || 0) + s.minutes));
@@ -478,7 +552,9 @@ function buildReportEmail() {
   const body = [
     `Hi ${joinNames(recipients.map((c) => c.name)) || "there"},`,
     "",
-    `Here's what I studied from ${shortDay(reportStartKey())} to ${shortDay(UI.dateKey())}.`,
+    sorted.length
+      ? `Here's what I studied from ${shortDay(sorted[0].studied_on)} to ${shortDay(UI.dateKey())}.`
+      : "I haven't logged any new study time yet.",
     "",
     `Total: ${formatMinutes(total)} across ${sorted.length} session${sorted.length === 1 ? "" : "s"}`,
     "",
@@ -536,7 +612,11 @@ $("mail-provider").addEventListener("change", () => {
 });
 
 $("send-report").addEventListener("click", () => {
-  if (sessions.length === 0) return setMessage("send-message", "Log some study time first. There's nothing to report yet.");
+  if (pendingSessions().length === 0) {
+    return setMessage("send-message", lastSentAt()
+      ? "Nothing new since your last report. Log some study time first."
+      : "Log some study time first. There's nothing to report yet.");
+  }
   const email = buildReportEmail();
   if (email.to.length === 0) return setMessage("send-message", "Switch on \"Weekly report\" for at least one teacher first.");
   const provider = $("mail-provider").value;
@@ -544,6 +624,38 @@ $("send-report").addEventListener("click", () => {
   setMessage("send-message", provider === "proton"
     ? "Opened Proton Mail. Check it and press Send. If the email is empty, open \"See the email\" below and use the Copy buttons."
     : "Opened your email. Check it and press Send.", false);
+  $("sent-confirm").hidden = false;
+});
+
+$("confirm-sent").addEventListener("click", async () => {
+  const button = $("confirm-sent");
+  button.disabled = true;
+  previousSentValue = (currentUser.user_metadata && currentUser.user_metadata.last_report_sent) || null;
+  try {
+    await setLastSent(new Date().toISOString());
+    $("sent-confirm").hidden = true;
+    $("undo-sent").hidden = false;
+    setMessage("send-message", "Marked as sent ✓. Anything you log from now on goes in your next report.", false);
+  } catch (error) {
+    setMessage("send-message", `Couldn't save that: ${friendlyError(error)}`);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+$("not-sent").addEventListener("click", () => {
+  $("sent-confirm").hidden = true;
+  setMessage("send-message", "");
+});
+
+$("undo-sent").addEventListener("click", async () => {
+  try {
+    await setLastSent(previousSentValue);
+    $("undo-sent").hidden = true;
+    setMessage("send-message", "Undone. Those sessions are back in your next report.", false);
+  } catch (error) {
+    setMessage("send-message", `Couldn't undo: ${friendlyError(error)}`);
+  }
 });
 
 document.querySelectorAll("[data-copy]").forEach((button) => {

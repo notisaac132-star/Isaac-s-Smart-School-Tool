@@ -592,3 +592,19 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
   .clock-block .today { display: none; }
   .profile-text .account-email { display: none; }
 }
+
+/* Sending early */
+.sent-confirm {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(79, 125, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(79, 125, 255, 0.1);
+}
+.sent-confirm span { font-weight: 600; margin-right: auto; }
+.sent-status { margin: 0.75rem 0 0; color: var(--muted); font-size: 0.9rem; }
+.link-btn.inline { display: inline; margin: 0 0 0 0.4rem; padding: 0; }
