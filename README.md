@@ -8,7 +8,11 @@
 
 For **Chromebook**, **Windows** and **Mac** · Free · Updates itself
 
-### [⬇ Get the app](https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/)
+### [⬇ Get the app](https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/) · [📖 Step-by-step install guide](INSTALL.md)
+
+<a href="install/chromebook.md"><img src="docs/logos/chrome.svg" width="56" alt="Install on Chromebook"></a>&nbsp;&nbsp;
+<a href="install/windows.md"><img src="docs/logos/windows.svg" width="56" alt="Install on Windows"></a>&nbsp;&nbsp;
+<a href="install/mac.md"><img src="docs/logos/apple.svg" width="56" alt="Install on Mac"></a>
 
 <img src="docs/screenshot-home.png" width="820" alt="The home screen: a row of big app icons with falling white dots in the background">
 
@@ -22,7 +26,8 @@ For **Chromebook**, **Windows** and **Mac** · Free · Updates itself
 | 🪟 **Windows** | [**Installer (.exe)**](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Windows-Setup.exe) · [Portable, no install (.exe)](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Windows-Portable.exe) |
 | 🍎 **Mac** | [**Mac app (.dmg)**](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest/download/Smart-School-Tool-Mac.dmg) (Apple Silicon and Intel) |
 
-Not sure which? The [download page](https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/) picks the right one for your computer.
+Not sure which? The [download page](https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/) picks the right one for your computer,
+and the [**install guide**](INSTALL.md) walks you through it step by step.
 
 ## What it does
 
@@ -42,6 +47,8 @@ Not sure which? The [download page](https://notisaac132-star.github.io/Isaac-s-S
 </table>
 
 ## Installing
+
+Full step-by-step guides: [**Chromebook**](install/chromebook.md) · [**Windows**](install/windows.md) · [**Mac**](install/mac.md)
 
 <details>
 <summary><b>💻 Chromebook</b></summary>
