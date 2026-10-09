@@ -56,8 +56,9 @@ Click **More info**, then **Run anyway**. Same reason: the app isn't signed with
 ## Features
 
 - **Home screen**: a dark landing page with falling white dots, a greeting and today's date.
-- **Weekly study reports**: log what you studied and for how long. Every Sunday each of your teachers gets an email
-  with that week's sessions, time per subject and the total. Replies go straight to you.
+- **Weekly study reports**: log what you studied and for how long. **Open email to teachers** opens a new email
+  (Proton Mail, Gmail, Outlook or your computer's email app) with your last 7 days of study, time per subject and the
+  total, addressed to your teachers. Check it and press Send; it comes from your own email address.
 - **Accounts**: sign up and log in with email and password. Your teachers and tutors are saved to your account,
   so they show up on any computer you log in on. Forgot your password? Use **Forgot password?** on the log-in screen.
 - **Teacher & tutor emails**: add your teachers and tutors (name, optional subject, email). Click an email to start a message.
@@ -70,13 +71,7 @@ windows/    Windows build settings + install notes
 mac/        Mac build settings + install notes
 download/   the "pick your computer" download page and the password-reset page
 supabase/   database setup for accounts (schema.sql)
-scripts/    the weekly report emailer (run by .github/workflows/weekly-reports.yml)
 ```
-
-Weekly reports are sent by GitHub Actions every Sunday at 17:00 UTC through [Brevo](https://www.brevo.com)'s free
-SMTP relay. They need four repository secrets (**Settings → Secrets and variables → Actions**):
-`SUPABASE_SERVICE_ROLE_KEY`, `SMTP_LOGIN` and `SMTP_KEY` (Brevo → SMTP & API → SMTP), and `EMAIL_FROM` (a sender
-address verified in Brevo). Run the workflow by hand with "Dry run" ticked to check everything without sending.
 
 Accounts run on [Supabase](https://supabase.com). The project's URL and public (anon/publishable) key live in
 `src/config.js`; what each account can see is enforced by row level security in `supabase/schema.sql`.

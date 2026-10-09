@@ -14,8 +14,7 @@
   },
   "devDependencies": {
     "electron": "^44.7.0",
-    "electron-builder": "^26.15.3",
-    "nodemailer": "^10.0.16"
+    "electron-builder": "^26.15.3"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.3",

@@ -1,5 +1,6 @@
 // Smart School Tool: accounts (Supabase Auth), each account's teachers/tutors, and logged study time.
-// Every Sunday a GitHub Actions job (scripts/send-weekly-reports.mjs) emails the week's sessions to the teachers.
+// The weekly report is sent by the student: "Open email to teachers" opens a new email (in Proton, Gmail, Outlook
+// or the computer's email app) with the last 7 days of study and the teachers already filled in.
 
 const config = window.APP_CONFIG || {};
 const configured = Boolean(config.supabaseUrl && config.supabaseKey && window.supabase);
@@ -13,7 +14,9 @@ const CONTACT_FIELDS = "id, kind, name, subject, email, reports";
 let currentUser = null;
 const contacts = { teachers: [], tutors: [] };
 let contactsLoaded = false;
-let sessions = []; // study sessions not yet emailed (they go in the next weekly report)
+let sessions = []; // study sessions from the last 7 days (what goes in the weekly report)
+const REPORT_DAYS = 7;
+const PROVIDER_KEY = "smartSchoolTool.mailProvider";
 
 // ---------- Small helpers ----------
 
@@ -349,10 +352,14 @@ function formatMinutes(total) {
   return minutes ? `${hours} h ${minutes} min` : `${hours} h`;
 }
 
-function nextReportDay() {
+function reportStartKey() {
   const date = new Date();
-  date.setDate(date.getDate() + ((7 - date.getDay()) % 7 || 7));
-  return date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  date.setDate(date.getDate() - (REPORT_DAYS - 1));
+  return UI.dateKey(date);
+}
+
+function shortDay(key) {
+  return UI.parseDateKey(key).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }
 
 function joinNames(names) {
@@ -364,7 +371,7 @@ async function loadSessions() {
   const { data, error } = await db
     .from("study_sessions")
     .select("id, subject, minutes, studied_on, notes")
-    .is("reported_at", null)
+    .gte("studied_on", reportStartKey())
     .order("studied_on", { ascending: true })
     .order("created_at", { ascending: true });
   if (error) {
@@ -375,12 +382,17 @@ async function loadSessions() {
   renderSessions();
 }
 
+function reportRecipients() {
+  return [...contacts.teachers, ...contacts.tutors].filter((c) => c.reports);
+}
+
 function renderRecipients() {
-  const recipients = [...contacts.teachers, ...contacts.tutors].filter((c) => c.reports);
+  const recipients = reportRecipients();
   $("report-recipients").textContent = recipients.length
-    ? `Emailed to ${joinNames(recipients.map((c) => c.name))} on ${nextReportDay()}.`
+    ? `Goes to ${joinNames(recipients.map((c) => c.name))}. It opens a new email for you to check and press Send.`
     : "Nobody is set to get your weekly report. Switch on \"Weekly report\" for a teacher in Teachers & Tutors.";
   $("report-recipients").classList.toggle("warning", recipients.length === 0);
+  renderEmailPreview();
 }
 
 function renderSubjectSuggestions() {
@@ -392,17 +404,19 @@ function renderSubjectSuggestions() {
 function renderSessions() {
   const total = sessions.reduce((sum, s) => sum + s.minutes, 0);
   $("week-total").textContent = total ? `Total: ${formatMinutes(total)}` : "";
+  const isSunday = new Date().getDay() === 0;
   $("study-summary").textContent = total
-    ? `${formatMinutes(total)} logged for this week's report`
-    : "Nothing logged this week yet";
+    ? `${isSunday ? "It's Sunday: send your weekly report! · " : ""}${formatMinutes(total)} in the last 7 days`
+    : "Nothing logged in the last 7 days";
+  renderEmailPreview();
 
   const list = $("session-list");
   if (sessions.length === 0) {
-    list.replaceChildren(UI.h("li", { class: "empty", text: "Nothing logged yet. Add your first study session above." }));
+    list.replaceChildren(UI.h("li", { class: "empty", text: "Nothing logged in the last 7 days. Add a study session above." }));
     return;
   }
   list.replaceChildren(...sessions.map((session) => {
-    const day = UI.parseDateKey(session.studied_on).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    const day = shortDay(session.studied_on);
     const remove = UI.h("button", { type: "button", class: "remove-btn", text: "Remove" });
     remove.addEventListener("click", async () => {
       remove.disabled = true;
@@ -428,7 +442,102 @@ function prepareStudyForm() {
   const form = $("study-form");
   if (!form.elements.studied_on.value) form.elements.studied_on.value = UI.dateKey();
   form.elements.studied_on.max = UI.dateKey();
+  form.elements.studied_on.min = reportStartKey();
 }
+
+// ---------- Weekly report email ----------
+
+function buildReportEmail() {
+  const recipients = reportRecipients();
+  const sorted = [...sessions].sort((a, b) => a.studied_on.localeCompare(b.studied_on));
+  const total = sorted.reduce((sum, s) => sum + s.minutes, 0);
+  const bySubject = new Map();
+  sorted.forEach((s) => bySubject.set(s.subject, (bySubject.get(s.subject) || 0) + s.minutes));
+  const name = (currentUser && currentUser.user_metadata && currentUser.user_metadata.name) || "";
+
+  const subject = `Weekly study report${name ? `: ${name}` : ""} (${formatMinutes(total)})`;
+  const body = [
+    `Hi ${joinNames(recipients.map((c) => c.name)) || "there"},`,
+    "",
+    `Here's what I studied from ${shortDay(reportStartKey())} to ${shortDay(UI.dateKey())}.`,
+    "",
+    `Total: ${formatMinutes(total)} across ${sorted.length} session${sorted.length === 1 ? "" : "s"}`,
+    "",
+    "By subject:",
+    ...[...bySubject.entries()].sort((a, b) => b[1] - a[1]).map(([subj, minutes]) => `- ${subj}: ${formatMinutes(minutes)}`),
+    "",
+    "Sessions:",
+    ...sorted.map((s) => `- ${shortDay(s.studied_on)}: ${s.subject}, ${formatMinutes(s.minutes)}${s.notes ? `\n    Note: ${s.notes}` : ""}`),
+    "",
+    "Thanks,",
+    name || "",
+  ].join("\n").trimEnd();
+
+  return { to: recipients.map((c) => c.email), subject, body };
+}
+
+// A link that opens a new, filled-in email in the chosen email service.
+function composeUrl(provider, { to, subject, body }) {
+  const q = encodeURIComponent;
+  const mailto = `mailto:${to.map((email) => q(email).replace(/%40/g, "@")).join(",")}?subject=${q(subject)}&body=${q(body)}`;
+  switch (provider) {
+    case "gmail":
+      return `https://mail.google.com/mail/?view=cm&fs=1&to=${q(to.join(","))}&su=${q(subject)}&body=${q(body)}`;
+    case "outlook":
+      return `https://outlook.live.com/mail/0/deeplink/compose?to=${q(to.join(","))}&subject=${q(subject)}&body=${q(body)}`;
+    case "proton":
+      return `https://mail.proton.me/inbox#mailto=${q(mailto)}`;
+    default:
+      return mailto;
+  }
+}
+
+function renderEmailPreview() {
+  const email = buildReportEmail();
+  $("preview-to").textContent = email.to.join(", ") || "(nobody yet)";
+  $("preview-subject").textContent = email.subject;
+  $("preview-body").textContent = email.body;
+}
+
+function loadProvider() {
+  try {
+    const saved = localStorage.getItem(PROVIDER_KEY);
+    if (saved) $("mail-provider").value = saved;
+  } catch {
+    // Not remembering the choice is fine.
+  }
+}
+
+$("mail-provider").addEventListener("change", () => {
+  try {
+    localStorage.setItem(PROVIDER_KEY, $("mail-provider").value);
+  } catch {
+    // Not remembering the choice is fine.
+  }
+});
+
+$("send-report").addEventListener("click", () => {
+  if (sessions.length === 0) return setMessage("send-message", "Log some study time first. There's nothing to report yet.");
+  const email = buildReportEmail();
+  if (email.to.length === 0) return setMessage("send-message", "Switch on \"Weekly report\" for at least one teacher first.");
+  const provider = $("mail-provider").value;
+  window.open(composeUrl(provider, email), "_blank");
+  setMessage("send-message", provider === "proton"
+    ? "Opened Proton Mail. Check it and press Send. If the email is empty, open \"See the email\" below and use the Copy buttons."
+    : "Opened your email. Check it and press Send.", false);
+});
+
+document.querySelectorAll("[data-copy]").forEach((button) => {
+  button.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText($(button.dataset.copy).textContent);
+      button.textContent = "Copied!";
+    } catch {
+      button.textContent = "Select and copy";
+    }
+    setTimeout(() => (button.textContent = "Copy"), 1500);
+  });
+});
 
 $("study-form").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -439,6 +548,7 @@ $("study-form").addEventListener("submit", async (event) => {
   if (!subject) return setMessage("study-message", "Say what you studied.");
   if (!Number.isInteger(minutes) || minutes < 1 || minutes > 1440) return setMessage("study-message", "Enter how many minutes you studied (1 to 1440).");
   if (!studiedOn || studiedOn > UI.dateKey()) return setMessage("study-message", "Pick the day you studied (not in the future).");
+  if (studiedOn < reportStartKey()) return setMessage("study-message", "You can only log study time from the last 7 days.");
 
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true;
@@ -486,6 +596,7 @@ $("logout-btn").addEventListener("click", async () => {
 window.addEventListener("hashchange", showView);
 
 setAuthMode("login");
+loadProvider();
 renderAll();
 renderSessions();
 greet();
