@@ -1,9 +1,10 @@
 name: Build apps
 
-# Every push rebuilds BOTH the Windows and Mac apps from the shared src/ folder.
+# Every push rebuilds the Windows and Mac apps from the shared src/ folder.
 # Pushes to the default branch also publish them as the newest GitHub Release
 # (version 1.0.<run number>), which is where the download links and the apps'
-# built-in auto-updater get the latest version from.
+# built-in auto-updater get the latest version from, and publish the Chromebook
+# app (an installable web app) to GitHub Pages at /app/, which updates itself.
 on:
   push:
     branches: ["**"]
@@ -93,13 +94,11 @@ jobs:
             Built from ${{ github.sha }}.
           files: out/*
 
-  # Hosts the download page (download/index.html) on GitHub Pages.
-  # Runs only on the default branch; Pages must be enabled with source "GitHub Actions".
-  # Allowed to fail so the app builds stay green until Pages is turned on in the repo settings.
+  # Hosts the download page (download/index.html) and the Chromebook app (built into download/app/)
+  # on GitHub Pages. Runs only on the default branch.
   pages:
     if: github.ref_name == github.event.repository.default_branch
     needs: release
-    continue-on-error: true
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -116,6 +115,8 @@ jobs:
         run: |
           cp src/snow.js src/config.js download/
           cp node_modules/@supabase/supabase-js/dist/umd/supabase.js download/supabase.js
+      - name: Build the Chromebook app (same version number as the Windows and Mac apps)
+        run: sh chromebook/build.sh download/app 1.0.${{ github.run_number }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: download

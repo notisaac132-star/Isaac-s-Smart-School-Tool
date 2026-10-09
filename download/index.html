@@ -86,7 +86,19 @@
       <circle cx="420" cy="342" r="18" fill="#ffd34d"/>
     </svg>
     <h1>Smart School Tool</h1>
-    <p class="tagline">Keep your teachers' and tutors' emails in one place.</p>
+    <p class="tagline">Log your study time and send a weekly report to your teachers.</p>
+
+    <section class="card" id="chromebook" hidden>
+      <h2>Install on Chromebook</h2>
+      <a class="btn" href="app/">Open &amp; install on Chromebook</a>
+      <ol class="steps">
+        <li>Click the button above to open the app.</li>
+        <li>Click <strong>⬇ Install app</strong> at the bottom of the app, or the install icon at the right end of the address bar.
+          (Or open Chrome's <strong>⋮</strong> menu → <strong>Cast, save, and share</strong> → <strong>Install page as app</strong>.)</li>
+        <li>It's now in your launcher like any other app, and it updates itself.</li>
+        <li>School Chromebook won't let you install apps? You can still use it right in Chrome. Just bookmark it.</li>
+      </ol>
+    </section>
 
     <section class="card" id="windows" hidden>
       <h2>Download for Windows</h2>
@@ -121,38 +133,40 @@
       const platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "";
       const ua = navigator.userAgent || "";
       const text = platform + " " + ua;
+      if (/CrOS|Chrome OS/i.test(text)) return "chromebook";
       // iPads report themselves as "Mac" but have touch screens; they can't run the Mac app.
       if (/Mac/i.test(text) && navigator.maxTouchPoints <= 1) return "mac";
       if (/Win/i.test(text)) return "windows";
       return "other";
     }
 
+    const LABELS = { chromebook: "Chromebook", windows: "Windows", mac: "Mac" };
     const os = detectOS();
     const other = document.getElementById("other");
 
-    function showOnly(id) {
+    function show(id) {
       document.getElementById(id).hidden = false;
-      const otherId = id === "mac" ? "windows" : "mac";
-      const label = otherId === "mac" ? "Mac" : "Windows";
-      other.innerHTML = "";
-      const link = document.createElement("a");
-      link.href = "#";
-      link.textContent = "Need the " + label + " version instead?";
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        document.getElementById(otherId).hidden = false;
-        other.hidden = true;
-      });
-      other.append(link);
     }
 
-    if (os === "mac" || os === "windows") {
-      showOnly(os);
+    if (os in LABELS) {
+      show(os);
+      // Small links to the other versions underneath.
+      other.replaceChildren(document.createTextNode("Also available for "));
+      Object.keys(LABELS).filter((key) => key !== os).forEach((key, i, rest) => {
+        const link = document.createElement("a");
+        link.href = "#";
+        link.textContent = LABELS[key];
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          show(key);
+          link.replaceWith(document.createTextNode(LABELS[key]));
+        });
+        other.append(link, document.createTextNode(i < rest.length - 1 ? " and " : "."));
+      });
     } else {
-      // Phones, tablets, Linux: show both so people can grab the right one for their computer.
-      document.getElementById("windows").hidden = false;
-      document.getElementById("mac").hidden = false;
-      other.textContent = "This app runs on Windows and Mac computers.";
+      // Phones, tablets, Linux: show everything so people can grab the right one for their computer.
+      Object.keys(LABELS).forEach(show);
+      other.textContent = "This app runs on Chromebooks, Windows and Mac computers.";
     }
   </script>
 </body>
