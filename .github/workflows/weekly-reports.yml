@@ -1,7 +1,7 @@
 name: Weekly study reports
 
 # Every Sunday, email each student's logged study time to their teachers.
-# Needs repository secrets SUPABASE_SERVICE_ROLE_KEY, GMAIL_USER and GMAIL_APP_PASSWORD.
+# Needs repository secrets SUPABASE_SERVICE_ROLE_KEY plus the Brevo sender: SMTP_LOGIN, SMTP_KEY and EMAIL_FROM.
 on:
   schedule:
     - cron: "0 17 * * 0" # Sundays 17:00 UTC
@@ -37,6 +37,10 @@ jobs:
         env:
           SUPABASE_URL: https://kjnvkgzqwsgjexcysjjj.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
+          SMTP_KEY: ${{ secrets.SMTP_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          # Optional alternative to Brevo: a Gmail account with an app password.
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
