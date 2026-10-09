@@ -52,7 +52,7 @@ function needsSetup() {
 }
 
 function showView() {
-  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study" };
+  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study" };
   let id = routes[location.hash] || "home";
   if (!currentUser) id = "auth";
   // New accounts have to add a teacher before anything else.
@@ -69,6 +69,12 @@ function showView() {
   });
   if (id === "study") prepareStudyForm();
   window.scrollTo(0, 0);
+  if (id === "study" && location.hash === "#send") document.querySelector(".send-card").scrollIntoView({ block: "start" });
+}
+
+// Keeps the console home screen's info panel in sync (home.js loads after this file).
+function refreshHome() {
+  if (window.ConsoleHome) window.ConsoleHome.refresh();
 }
 
 function greet() {
@@ -76,6 +82,8 @@ function greet() {
   const part = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
   const name = currentUser && currentUser.user_metadata && currentUser.user_metadata.name;
   $("greeting").textContent = name ? `Good ${part}, ${name}` : `Good ${part}`;
+  const initialSource = name || (currentUser && currentUser.email) || "?";
+  $("avatar").textContent = initialSource.trim().charAt(0).toUpperCase();
   $("today").textContent = new Date().toLocaleDateString(undefined, {
     weekday: "long",
     month: "long",
@@ -222,6 +230,7 @@ function updateSummary() {
   $("contacts-summary").textContent = teachers.length + tutors.length === 0
     ? "Add your teachers' and tutors' emails"
     : `${plural(teachers.length, "teacher")} · ${plural(tutors.length, "tutor")}`;
+  refreshHome();
 }
 
 function renderAll() {
@@ -392,7 +401,17 @@ function renderRecipients() {
     ? `Goes to ${joinNames(recipients.map((c) => c.name))}. It opens a new email for you to check and press Send.`
     : "Nobody is set to get your weekly report. Switch on \"Weekly report\" for a teacher in Teachers & Tutors.";
   $("report-recipients").classList.toggle("warning", recipients.length === 0);
+  renderSendSummary();
   renderEmailPreview();
+}
+
+function renderSendSummary() {
+  const recipients = reportRecipients();
+  const isSunday = new Date().getDay() === 0;
+  if (recipients.length === 0) $("send-summary").textContent = "Switch on \"Weekly report\" for a teacher first";
+  else if (isSunday && sessions.length) $("send-summary").textContent = "It's Sunday: time to send it!";
+  else $("send-summary").textContent = `Goes to ${joinNames(recipients.map((c) => c.name))}`;
+  refreshHome();
 }
 
 function renderSubjectSuggestions() {
@@ -404,10 +423,10 @@ function renderSubjectSuggestions() {
 function renderSessions() {
   const total = sessions.reduce((sum, s) => sum + s.minutes, 0);
   $("week-total").textContent = total ? `Total: ${formatMinutes(total)}` : "";
-  const isSunday = new Date().getDay() === 0;
   $("study-summary").textContent = total
-    ? `${isSunday ? "It's Sunday: send your weekly report! · " : ""}${formatMinutes(total)} in the last 7 days`
+    ? `${formatMinutes(total)} in the last 7 days`
     : "Nothing logged in the last 7 days";
+  renderSendSummary();
   renderEmailPreview();
 
   const list = $("session-list");

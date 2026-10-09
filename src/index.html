@@ -51,42 +51,78 @@
   </main>
 
   <!-- Landing page -->
-  <main class="view" id="home" hidden>
-    <div class="account-bar">
-      <span class="account-email" id="account-email"></span>
-      <button type="button" class="ghost-btn" id="logout-btn">Log out</button>
-    </div>
-    <div class="hero">
-      <svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
-        <rect x="16" y="16" width="480" height="480" rx="110" fill="#3b6cf6"/>
-        <path d="M256 130 L440 215 L256 300 L72 215 Z" fill="#fff"/>
-        <path d="M150 255 V340 C150 380 362 380 362 340 V255 L256 305 Z" fill="#fff"/>
-        <path d="M420 225 V330" stroke="#ffd34d" stroke-width="16" stroke-linecap="round"/>
-        <circle cx="420" cy="342" r="18" fill="#ffd34d"/>
-      </svg>
-      <p class="greeting" id="greeting">Welcome</p>
-      <h1>Isaac's Smart School Tool</h1>
-      <p class="today" id="today"></p>
-    </div>
+  <main class="view console" id="home" hidden>
+    <!-- Top bar: profile on the left, clock and log out on the right -->
+    <header class="console-top">
+      <div class="profile">
+        <span class="avatar" id="avatar" aria-hidden="true">?</span>
+        <div class="profile-text">
+          <span class="greeting" id="greeting">Welcome</span>
+          <span class="account-email" id="account-email"></span>
+        </div>
+      </div>
+      <div class="console-status">
+        <div class="clock-block">
+          <span class="clock" id="clock"></span>
+          <span class="today" id="today"></span>
+        </div>
+        <button type="button" class="ghost-btn" id="logout-btn">Log out</button>
+      </div>
+    </header>
 
-    <div class="tiles">
-      <a class="tile tile-primary" href="#study">
-        <svg class="tile-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/>
-          <path d="M12 9v4l2.5 2.5M9.5 2.5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- The row of big icons. Arrow keys / controller move, Enter / A opens. -->
+    <nav class="console-row" id="console-row" aria-label="Apps">
+      <a class="console-tile" href="#study" data-color="blue" data-title="Log study time"
+         data-desc="Write down what you studied and for how long.">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="27" r="15"/>
+          <path d="M24 19v8l5 5M18 6h12M24 6v6"/>
         </svg>
-        <span class="tile-title">Log study time</span>
-        <span class="tile-sub" id="study-summary">Nothing logged this week yet</span>
+        <span class="console-label">Log study time</span>
+        <span class="console-stat" id="study-summary">Nothing logged in the last 7 days</span>
       </a>
-      <a class="tile" href="#contacts">
-        <svg class="tile-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
-          <path d="M4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <a class="console-tile" href="#send" data-color="green" data-title="Send report"
+         data-desc="Email your teachers what you studied this week.">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M42 6L20 28M42 6L28 42l-8-14-14-8z"/>
         </svg>
-        <span class="tile-title">Teachers &amp; Tutors</span>
-        <span class="tile-sub" id="contacts-summary">Add your teachers' and tutors' emails</span>
+        <span class="console-label">Send report</span>
+        <span class="console-stat" id="send-summary">Goes to your teachers</span>
       </a>
-    </div>
+      <a class="console-tile" href="#contacts" data-color="purple" data-title="Teachers &amp; Tutors"
+         data-desc="Add, remove and choose who gets your weekly report.">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="18" cy="17" r="7"/>
+          <path d="M5 40c1.5-8 6.5-12 13-12s11.5 4 13 12"/>
+          <circle cx="34" cy="15" r="5.5"/>
+          <path d="M33 25c5.5 0 9 3.5 10.5 10"/>
+        </svg>
+        <span class="console-label">Teachers &amp; Tutors</span>
+        <span class="console-stat" id="contacts-summary">Add your teachers' and tutors' emails</span>
+      </a>
+      <div class="console-tile locked" data-color="gray" data-title="Coming soon"
+           data-desc="New tools will unlock here." aria-disabled="true" tabindex="-1">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <rect x="11" y="21" width="26" height="20" rx="4"/>
+          <path d="M16 21v-5a8 8 0 0 1 16 0v5M24 29v5"/>
+        </svg>
+        <span class="console-label">Coming soon</span>
+        <span class="console-stat">Locked</span>
+      </div>
+    </nav>
+
+    <!-- Details for whichever icon is selected -->
+    <section class="console-info" aria-live="polite">
+      <h1 id="console-title"></h1>
+      <p id="console-desc"></p>
+      <p class="console-info-stat" id="console-stat"></p>
+    </section>
+
+    <footer class="console-hints" aria-hidden="true">
+      <span><kbd>◀</kbd><kbd>▶</kbd> Move</span>
+      <span><kbd>Enter</kbd> Open</span>
+      <span class="pad-hint" id="pad-hint" hidden>🎮 Controller connected</span>
+    </footer>
   </main>
 
   <!-- Teachers & tutors -->
@@ -224,5 +260,6 @@
   <script src="ui.js"></script>
   <script src="../node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
   <script src="app.js"></script>
+  <script src="home.js"></script>
 </body>
 </html>
