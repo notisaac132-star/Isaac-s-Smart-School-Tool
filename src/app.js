@@ -52,7 +52,7 @@ function needsSetup() {
 }
 
 function showView() {
-  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study" };
+  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study", "#donate": "donate" };
   let id = routes[location.hash] || "home";
   if (!currentUser) id = "auth";
   // New accounts have to add a teacher before anything else.
