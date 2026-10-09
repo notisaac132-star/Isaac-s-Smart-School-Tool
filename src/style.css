@@ -467,7 +467,7 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 2.1rem;
+  gap: clamp(1.2rem, 2.6vw, 2.1rem);
   margin-top: auto;
   padding: 3.5rem 1.5rem 4rem;
 }
@@ -478,9 +478,10 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
   --to: #2b4fd8;
   position: relative;
   flex: 0 0 auto;
-  width: 150px;
-  height: 150px;
-  border-radius: 30px;
+  /* Shrinks on smaller windows so the whole row fits; phones scroll instead (see below). */
+  width: clamp(96px, 12.5vw, 150px);
+  height: clamp(96px, 12.5vw, 150px);
+  border-radius: clamp(22px, 2.6vw, 30px);
   display: grid;
   place-items: center;
   color: #fff;
@@ -497,8 +498,8 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .console-tile[data-color="gray"] { --from: #4a5268; --to: #2c3242; }
 
 .console-tile svg {
-  width: 64px;
-  height: 64px;
+  width: 43%;
+  height: 43%;
   fill: none;
   stroke: currentColor;
   stroke-width: 3.2;
@@ -608,3 +609,42 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .sent-confirm span { font-weight: 600; margin-right: auto; }
 .sent-status { margin: 0.75rem 0 0; color: var(--muted); font-size: 0.9rem; }
 .link-btn.inline { display: inline; margin: 0 0 0 0.4rem; padding: 0; }
+
+/* Donate */
+.console-tile[data-color="pink"] { --from: #ff6fa8; --to: #e0306f; }
+
+.donate-intro { margin: 0 0 1rem; color: var(--muted); }
+.pay-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.pay-method {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 1.4rem 1rem;
+  border-radius: 16px;
+  border: 2px solid var(--border);
+  background: var(--field);
+  color: var(--text);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.pay-method:hover { background: var(--field); transform: translateY(-2px); border-color: rgba(255, 255, 255, 0.3); }
+.pay-method.selected { border-color: #fff; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12), 0 12px 30px rgba(0, 0, 0, 0.4); }
+.pay-logo { width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
+.pay-name { font-weight: 700; font-size: 1.15rem; }
+.pay-handle { color: var(--muted); font-size: 0.85rem; overflow-wrap: anywhere; }
+
+.amounts { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 0.6rem; }
+.amount-btn {
+  padding: 0.75rem 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border-radius: 12px;
+  background: var(--field);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.amount-btn:hover { background: var(--accent); border-color: var(--accent); }
+#amount-card h2 { margin: 0 0 0.9rem; font-size: 1.15rem; overflow-wrap: anywhere; }
+
+@media (max-width: 480px) {
+  .pay-methods { grid-template-columns: 1fr; }
+}
