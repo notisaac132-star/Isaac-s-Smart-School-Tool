@@ -73,9 +73,10 @@ supabase/   database setup for accounts (schema.sql)
 scripts/    the weekly report emailer (run by .github/workflows/weekly-reports.yml)
 ```
 
-Weekly reports are sent by GitHub Actions every Sunday at 17:00 UTC through a Gmail account. They need three
-repository secrets (**Settings → Secrets and variables → Actions**): `SUPABASE_SERVICE_ROLE_KEY`, `GMAIL_USER` and
-`GMAIL_APP_PASSWORD`. Run the workflow by hand with "Dry run" ticked to check everything without sending.
+Weekly reports are sent by GitHub Actions every Sunday at 17:00 UTC through [Brevo](https://www.brevo.com)'s free
+SMTP relay. They need four repository secrets (**Settings → Secrets and variables → Actions**):
+`SUPABASE_SERVICE_ROLE_KEY`, `SMTP_LOGIN` and `SMTP_KEY` (Brevo → SMTP & API → SMTP), and `EMAIL_FROM` (a sender
+address verified in Brevo). Run the workflow by hand with "Dry run" ticked to check everything without sending.
 
 Accounts run on [Supabase](https://supabase.com). The project's URL and public (anon/publishable) key live in
 `src/config.js`; what each account can see is enforced by row level security in `supabase/schema.sql`.
