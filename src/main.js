@@ -1,7 +1,17 @@
 // Electron entry point: opens the school tool in its own desktop window.
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const path = require("path");
 const { setupAutoUpdates } = require("./updater");
+const chrome = require("./chrome");
+
+// Email links can open in a chosen Chrome profile (e.g. "School"); see chrome.js and preload.js.
+ipcMain.handle("chrome-profiles", () => chrome.listProfiles());
+ipcMain.handle("open-email", (_event, url, profileDir) => {
+  if (typeof url !== "string" || !/^(https?:|mailto:)/.test(url)) return false;
+  if (profileDir && chrome.openInProfile(url, profileDir)) return true;
+  shell.openExternal(url);
+  return true;
+});
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -16,6 +26,7 @@ function createWindow() {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      preload: path.join(__dirname, "preload.js"),
     },
   });
 
