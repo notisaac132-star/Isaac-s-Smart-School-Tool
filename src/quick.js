@@ -1,6 +1,7 @@
 // Quick submit: drop one assignment PDF, pick a teacher, type (or keep) the assignment name, Submit.
-// With Gmail + Google sign-in (gmail.js) the PDF is attached to a Gmail draft; otherwise it's uploaded
-// privately and the email gets a short download link (files.js). Preset email:
+// The PDF always goes in as an attachment (no links: school networks can block them). With Gmail on
+// Chromebook / web it's attached for you (gmail.js); otherwise the email opens and you attach it.
+// Preset email:
 // subject "SMART SCHOOL TOOL: <student> Submitted An Assignment: <assignment>".
 window.QuickSubmit = (function () {
   const TEACHER_KEY = "smartSchoolTool.quickTeacher";
@@ -122,17 +123,34 @@ window.QuickSubmit = (function () {
 
   // ---------- Submit ----------
 
-  function buildEmail(teacher, assignment, uploaded) {
+  function buildEmail(teacher, assignment) {
     const name = studentName();
-    const lines = [`Hi ${teacher.name},`, "", `I've submitted my assignment: ${assignment}`, ""];
-    if (uploaded) lines.push(`📎 ${uploaded.name} (${files().formatSize(uploaded.size)})`, uploaded.url, "");
-    else lines.push("It's attached to this email.", "");
-    lines.push("Thanks,", name === "A student" ? "" : name, "", "Sent with Smart School Tool");
-    return { to: [teacher.email], subject: subjectFor(assignment), body: lines.join("\n") };
+    const body = [
+      `Hi ${teacher.name},`,
+      "",
+      `I've submitted my assignment: ${assignment}`,
+      "It's attached to this email.",
+      "",
+      "Thanks,",
+      name === "A student" ? "" : name,
+      "",
+      "Sent with Smart School Tool",
+    ].join("\n");
+    return { to: [teacher.email], subject: subjectFor(assignment), body };
   }
 
-  function done(teacher, text) {
-    setMessage(text || `Your email to ${teacher.name} is open: press Send to hand it in.`, false);
+  // Gmail on Chromebook / web attaches the PDF by itself; everywhere else the student adds it.
+  const autoAttach = (provider) => provider === "gmail" && Boolean(window.GmailAttach && window.GmailAttach.available());
+
+  function renderHint() {
+    $("quick-hint").textContent = autoAttach($("quick-provider").value)
+      ? "Your PDF is attached to the email for you (the first time, Google asks you to sign in)."
+      : window.desktop
+        ? "Your email opens, then you drag your PDF into it from here to attach it."
+        : "Your email opens, then you attach your PDF to it (or pick Gmail to have it attached for you).";
+  }
+
+  function reset() {
     file = null;
     $("quick-name").value = "";
     nameWasAutoFilled = false;
@@ -140,7 +158,7 @@ window.QuickSubmit = (function () {
   }
 
   // After a wait the browser may block a new tab, so if it does, offer a button to open the email instead.
-  function openOrOffer(tab, url, teacher) {
+  function openOrOffer(tab, url) {
     if (tab && !tab.closed) {
       tab.location.href = url;
       return;
@@ -155,6 +173,7 @@ window.QuickSubmit = (function () {
   }
 
   // Gmail with Google sign-in (Chromebook / web): a Gmail draft with the PDF really attached.
+  // Returns "" when done, or what went wrong.
   async function submitAttached(teacher, assignment) {
     const gmail = window.GmailAttach;
     const signedIn = gmail.hasToken();
@@ -166,30 +185,48 @@ window.QuickSubmit = (function () {
       setMessage(signedIn ? `Attaching ${sending.name}…` : "Sign in with Google to attach your PDF…", false);
       await asking;
       setMessage(`Attaching ${sending.name}…`, false);
-      const url = await gmail.createDraft({ ...buildEmail(teacher, assignment, null), file: sending });
-      done(teacher, `Attached! Your email to ${teacher.name} is open in Gmail: press Send to hand it in.`);
-      openOrOffer(tab, url, teacher);
+      const url = await gmail.createDraft({ ...buildEmail(teacher, assignment), file: sending });
+      setMessage(`Attached! Your email to ${teacher.name} is open in Gmail: press Send to hand it in.`, false);
+      reset();
+      openOrOffer(tab, url);
       return "";
     } catch (error) {
       if (tab && !tab.closed) tab.close();
-      setMessage(`Couldn't attach it in Gmail (${error.message}), so the email gets a download link instead…`, false);
-      return `Gmail couldn't attach it (${error.message}), so your email has a download link instead. `;
+      return `Gmail couldn't attach it by itself (${error.message}). `;
     }
   }
 
-  async function submitWithLink(teacher, assignment, provider, tab, note = "") {
-    try {
-      setMessage(`Uploading ${file.name}…`, false);
-      const uploaded = await files().uploadPdf(file);
-      const url = composeUrl(provider, buildEmail(teacher, assignment, uploaded));
-      done(teacher, `${note}Uploaded! Your email to ${teacher.name} is open: press Send to hand it in.`);
-      if (window.desktop || provider === "mailto") files().showEmail(tab, url);
-      else openOrOffer(tab, url, teacher);
-      files().loadShared();
-    } catch (error) {
-      if (tab && !tab.closed) tab.close();
-      setMessage(files().uploadErrorMessage(error));
+  // Desktop app: the PDF as a file you can drag straight into the email.
+  async function dragChip(pdf) {
+    const path = await window.desktop.savePdf(pdf.name, await pdf.arrayBuffer());
+    const chip = UI.h("div", { class: "drag-chip", draggable: "true", title: "Drag this into your email" },
+      UI.h("span", { class: "drag-chip-icon", text: "📄" }),
+      UI.h("span", { class: "drag-chip-text" },
+        UI.h("strong", { text: pdf.name }),
+        UI.h("span", { text: "Drag me into your email to attach me" })));
+    chip.addEventListener("dragstart", (event) => {
+      event.preventDefault();
+      window.desktop.dragFile(path);
+    });
+    return chip;
+  }
+
+  // Opens the email ready to send, and the student attaches the PDF.
+  async function submitAttachYourself(teacher, assignment, provider, tab, note = "") {
+    const pdf = file;
+    const url = composeUrl(provider, buildEmail(teacher, assignment));
+    if (window.desktop || provider === "mailto") files().showEmail(tab, url);
+    const box = $("attach-box");
+    if (window.desktop) {
+      setMessage(`${note}Your email to ${teacher.name} is open. Drag your PDF into it, then press Send.`, false);
+      box.replaceChildren(await dragChip(pdf));
+    } else {
+      setMessage(`${note}Your email to ${teacher.name} is open. Attach ${pdf.name} to it (📎, or drag it in from your Files app), then press Send.`, false);
+      box.replaceChildren();
+      if (!(window.desktop || provider === "mailto")) openOrOffer(tab, url);
     }
+    box.hidden = box.childElementCount === 0;
+    reset();
   }
 
   async function submit() {
@@ -202,14 +239,21 @@ window.QuickSubmit = (function () {
 
     const button = $("quick-submit");
     button.disabled = true;
+    $("attach-box").hidden = true;
     const provider = $("quick-provider").value;
     try {
-      if (provider === "gmail" && window.GmailAttach && window.GmailAttach.enabled()) {
+      if (autoAttach(provider)) {
+        const pdf = file;
         const problem = await submitAttached(teacher, assignment);
-        if (problem) await submitWithLink(teacher, assignment, provider, null, problem);
+        if (problem) {
+          file = pdf;
+          await submitAttachYourself(teacher, assignment, provider, null, problem);
+        }
       } else {
-        await submitWithLink(teacher, assignment, provider, files().openEmailTab(provider));
+        await submitAttachYourself(teacher, assignment, provider, files().openEmailTab(provider));
       }
+    } catch (error) {
+      setMessage(`Something went wrong: ${error.message}`);
     } finally {
       button.disabled = false;
     }
@@ -220,6 +264,7 @@ window.QuickSubmit = (function () {
   // ---------- Page setup ----------
 
   $("quick-provider").addEventListener("change", () => {
+    renderHint();
     try {
       localStorage.setItem(PROVIDER_KEY, $("quick-provider").value);
     } catch {
@@ -237,8 +282,9 @@ window.QuickSubmit = (function () {
     }
     renderTeachers();
     render();
+    renderHint();
     files().loadShared();
-    if (window.GmailAttach && window.GmailAttach.enabled()) window.GmailAttach.load();
+    if (window.GmailAttach && window.GmailAttach.available()) window.GmailAttach.load();
   }
 
   return { enter, take };

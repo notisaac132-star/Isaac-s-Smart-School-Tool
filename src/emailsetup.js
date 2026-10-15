@@ -103,8 +103,6 @@ window.EmailSetup = (function () {
     $("account-section").hidden = isDesktop || $("setup-provider").value !== "gmail";
     if (!$("school-account").value) $("school-account").value = meta().school_account || "";
     $("one-account").checked = Boolean(meta().email_setup_done) && !meta().school_account;
-    $("attach-row").hidden = !(window.GmailAttach && window.GmailAttach.available());
-    $("gmail-attach").checked = meta().gmail_attach !== false;
   }
 
   async function enter() {
@@ -149,7 +147,6 @@ window.EmailSetup = (function () {
       if (account && !/^\S+@\S+\.\S+$/.test(account)) return setMessage("That doesn't look like an email address.");
       updates.school_account = provider === "gmail" ? account : meta().school_account || "";
       updates.email_setup_done = true;
-      if (window.GmailAttach && window.GmailAttach.available()) updates.gmail_attach = $("gmail-attach").checked;
     }
 
     try {

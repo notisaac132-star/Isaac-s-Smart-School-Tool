@@ -34,7 +34,7 @@ and the [**install guide**](INSTALL.md) walks you through it step by step.
 - 🎮 **Console-style home screen.** Two rows of big app icons you move through with the arrow keys, mouse, touch or a game controller, on a dark background with falling white dots.
 - ⏱️ **Log study time.** What you studied, how long, which day, and a note for your teacher.
 - ✈️ **Send your weekly report.** One click opens an email (Proton Mail, Gmail, Outlook or your email app) with your study time per subject, each session and the total, already addressed to your teachers. Send it on Sunday or **early** any day; the next report only includes what's new.
-- ⚡ **Quick submit.** Drop your assignment PDF, pick your teacher, name it, Submit. The email is preset: *"SMART SCHOOL TOOL: Isaac Submitted An Assignment: Worksheet 4"*. With Gmail on a Chromebook the PDF is **attached** to the email; otherwise the email gets a short download link. Stop sharing a file any time.
+- ⚡ **Quick submit.** Drop your assignment PDF, pick your teacher, name it, Submit. The email is preset: *"SMART SCHOOL TOOL: Isaac Submitted An Assignment: Worksheet 4"*. The PDF goes in as an **attachment**, never a link: with Gmail on a Chromebook it's attached for you, otherwise you drag it into the email that opens.
 - 👥 **Teachers & tutors.** Add as many as you like and choose who gets the report.
 - 🔐 **Your own account.** Sign up with email and password; everything follows you to any computer you log in on.
 - 💖 **Donate.** Support the project with Cash App or PayPal.
@@ -122,8 +122,8 @@ sh chromebook/build.sh out/app 1.0.0       # Chromebook app into out/app
 
 ### Gmail attachments (optional)
 
-On Chromebook and the web, Quick submit can attach the PDF to a Gmail draft instead of adding a link. It needs a
-Google OAuth Client ID in `googleClientId` in `src/config.js` (it's public, like the Supabase key):
+On Chromebook and the web, Quick submit attaches the PDF to a Gmail draft by itself. It needs a Google OAuth
+Client ID in `googleClientId` in `src/config.js` (it's public, like the Supabase key; already set up):
 
 1. Create a project at [console.cloud.google.com](https://console.cloud.google.com/projectcreate).
 2. Turn on the [Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com).
@@ -135,5 +135,6 @@ Google OAuth Client ID in `googleClientId` in `src/config.js` (it's public, like
 6. **Clients → Create client → Web application**, add `https://notisaac132-star.github.io` under **Authorized
    JavaScript origins**, and copy the Client ID into `src/config.js`.
 
-Without a Client ID (and in the Windows/Mac apps, where Google doesn't allow its sign-in), emails get a short link
-instead. If a school account blocks the sign-in, Quick submit falls back to the short link by itself.
+Without it (and in the Windows/Mac apps, where Google doesn't allow its sign-in, or if a school account blocks the
+sign-in), the email opens ready to send and the student attaches the PDF: the desktop apps show it as a file to drag
+into the email.
