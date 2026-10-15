@@ -6,6 +6,7 @@ const path = require("path");
 const { setupAutoUpdates } = require("./updater");
 const chrome = require("./chrome");
 const google = require("./google");
+const { openEmailSplit } = require("./splitscreen");
 
 // Email links can open in a chosen Chrome profile (e.g. "School"); see chrome.js and preload.js.
 ipcMain.handle("chrome-profiles", () => chrome.listProfiles());
@@ -15,6 +16,9 @@ ipcMain.handle("open-email", (_event, url, profileDir) => {
   shell.openExternal(url);
   return true;
 });
+
+// Quick submit's drag-in step: app on the left half, the email window on the right (splitscreen.js).
+ipcMain.handle("open-email-split", (event, url, profileDir) => openEmailSplit(event.sender, url, profileDir));
 
 // Gmail attachments: Google sign-in in the student's browser (see google.js).
 const openInBrowser = (url, profileDir) => {
