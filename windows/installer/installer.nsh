@@ -10,6 +10,8 @@
 
 !ifndef BUILD_UNINSTALLER
   !macro customWelcomePage
+    ; Updates skip straight to installing.
+    !insertmacro skipPageIfUpdated
     !define MUI_WELCOMEPAGE_TITLE "Welcome to Smart School Tool"
     !define MUI_WELCOMEPAGE_TITLE_3LINES
     !define MUI_WELCOMEPAGE_TEXT "Log your study time, hand in assignments with Quick submit and send your teachers a weekly report, all from one place.$\r$\n$\r$\nThis takes less than a minute. The app keeps itself up to date after it's installed.$\r$\n$\r$\nClick Next to get started."
