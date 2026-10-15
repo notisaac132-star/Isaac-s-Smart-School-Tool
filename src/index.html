@@ -216,6 +216,8 @@
           <input id="school-account" type="email" autocomplete="email" placeholder="you@yourschool.org">
         </label>
         <label class="report-toggle"><input type="checkbox" id="one-account"> I only use one Google account in this browser</label>
+        <label class="report-toggle" id="attach-row" hidden><input type="checkbox" id="gmail-attach" checked>
+          📎 Attach PDFs to the email itself (asks you to sign in with Google once)</label>
       </div>
 
       <p class="form-message" id="email-setup-message" role="status"></p>
@@ -425,6 +427,7 @@
   <script src="home.js"></script>
   <script src="donate.js"></script>
   <script src="files.js"></script>
+  <script src="gmail.js"></script>
   <script src="quick.js"></script>
 </body>
 </html>

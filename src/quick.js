@@ -1,5 +1,6 @@
 // Quick submit: drop one assignment PDF, pick a teacher, type (or keep) the assignment name, Submit.
-// The PDF is uploaded privately and the email gets a download link (files.js), with a preset email:
+// With Gmail + Google sign-in (gmail.js) the PDF is attached to a Gmail draft; otherwise it's uploaded
+// privately and the email gets a short download link (files.js). Preset email:
 // subject "SMART SCHOOL TOOL: <student> Submitted An Assignment: <assignment>".
 window.QuickSubmit = (function () {
   const TEACHER_KEY = "smartSchoolTool.quickTeacher";
@@ -123,22 +124,72 @@ window.QuickSubmit = (function () {
 
   function buildEmail(teacher, assignment, uploaded) {
     const name = studentName();
-    const body = [
-      `Hi ${teacher.name},`,
-      "",
-      `I've submitted my assignment: ${assignment}`,
-      "",
-      `Download it here (${uploaded.name}, ${files().formatSize(uploaded.size)}):`,
-      uploaded.url,
-      "",
-      `(The link works until ${files().linkExpiry()}.)`,
-      "",
-      "Thanks,",
-      name === "A student" ? "" : name,
-      "",
-      "Sent with Smart School Tool",
-    ].join("\n");
-    return { to: [teacher.email], subject: subjectFor(assignment), body };
+    const lines = [`Hi ${teacher.name},`, "", `I've submitted my assignment: ${assignment}`, ""];
+    if (uploaded) lines.push(`📎 ${uploaded.name} (${files().formatSize(uploaded.size)})`, uploaded.url, "");
+    else lines.push("It's attached to this email.", "");
+    lines.push("Thanks,", name === "A student" ? "" : name, "", "Sent with Smart School Tool");
+    return { to: [teacher.email], subject: subjectFor(assignment), body: lines.join("\n") };
+  }
+
+  function done(teacher, text) {
+    setMessage(text || `Your email to ${teacher.name} is open: press Send to hand it in.`, false);
+    file = null;
+    $("quick-name").value = "";
+    nameWasAutoFilled = false;
+    render();
+  }
+
+  // After a wait the browser may block a new tab, so if it does, offer a button to open the email instead.
+  function openOrOffer(tab, url, teacher) {
+    if (tab && !tab.closed) {
+      tab.location.href = url;
+      return;
+    }
+    if (window.open(url, "_blank")) return;
+    const open = UI.h("button", { type: "button", class: "quick-btn open-email-btn", text: "✉ Open the email" });
+    open.addEventListener("click", () => {
+      window.open(url, "_blank");
+      open.remove();
+    });
+    $("quick-message").append(" ", open);
+  }
+
+  // Gmail with Google sign-in (Chromebook / web): a Gmail draft with the PDF really attached.
+  async function submitAttached(teacher, assignment) {
+    const gmail = window.GmailAttach;
+    const signedIn = gmail.hasToken();
+    const tab = signedIn ? window.open("", "_blank") : null;
+    const sending = file;
+    try {
+      // Opens Google's sign-in pop-up the first time; it has to start before any other waiting.
+      const asking = gmail.getToken(window.EmailSetup.gmailAccount());
+      setMessage(signedIn ? `Attaching ${sending.name}…` : "Sign in with Google to attach your PDF…", false);
+      await asking;
+      setMessage(`Attaching ${sending.name}…`, false);
+      const url = await gmail.createDraft({ ...buildEmail(teacher, assignment, null), file: sending });
+      done(teacher, `Attached! Your email to ${teacher.name} is open in Gmail: press Send to hand it in.`);
+      openOrOffer(tab, url, teacher);
+      return "";
+    } catch (error) {
+      if (tab && !tab.closed) tab.close();
+      setMessage(`Couldn't attach it in Gmail (${error.message}), so the email gets a download link instead…`, false);
+      return `Gmail couldn't attach it (${error.message}), so your email has a download link instead. `;
+    }
+  }
+
+  async function submitWithLink(teacher, assignment, provider, tab, note = "") {
+    try {
+      setMessage(`Uploading ${file.name}…`, false);
+      const uploaded = await files().uploadPdf(file);
+      const url = composeUrl(provider, buildEmail(teacher, assignment, uploaded));
+      done(teacher, `${note}Uploaded! Your email to ${teacher.name} is open: press Send to hand it in.`);
+      if (window.desktop || provider === "mailto") files().showEmail(tab, url);
+      else openOrOffer(tab, url, teacher);
+      files().loadShared();
+    } catch (error) {
+      if (tab && !tab.closed) tab.close();
+      setMessage(files().uploadErrorMessage(error));
+    }
   }
 
   async function submit() {
@@ -152,20 +203,13 @@ window.QuickSubmit = (function () {
     const button = $("quick-submit");
     button.disabled = true;
     const provider = $("quick-provider").value;
-    const tab = files().openEmailTab(provider);
     try {
-      setMessage(`Uploading ${file.name}…`, false);
-      const uploaded = await files().uploadPdf(file);
-      files().showEmail(tab, composeUrl(provider, buildEmail(teacher, assignment, uploaded)));
-      setMessage(`Uploaded! Your email to ${teacher.name} is open: press Send to hand it in.`, false);
-      file = null;
-      $("quick-name").value = "";
-      nameWasAutoFilled = false;
-      render();
-      files().loadShared();
-    } catch (error) {
-      if (tab && !tab.closed) tab.close();
-      setMessage(files().uploadErrorMessage(error));
+      if (provider === "gmail" && window.GmailAttach && window.GmailAttach.enabled()) {
+        const problem = await submitAttached(teacher, assignment);
+        if (problem) await submitWithLink(teacher, assignment, provider, null, problem);
+      } else {
+        await submitWithLink(teacher, assignment, provider, files().openEmailTab(provider));
+      }
     } finally {
       button.disabled = false;
     }
@@ -194,6 +238,7 @@ window.QuickSubmit = (function () {
     renderTeachers();
     render();
     files().loadShared();
+    if (window.GmailAttach && window.GmailAttach.enabled()) window.GmailAttach.load();
   }
 
   return { enter, take };

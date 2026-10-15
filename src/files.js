@@ -1,6 +1,7 @@
 // PDF uploads for Quick submit. The PDF is uploaded privately to the account (Supabase Storage, bucket
-// "school-files", one folder per account) and the email that opens contains a download link, because
-// links that open an email can't attach files. Also shows the "Files you've shared" list.
+// "school-files", one folder per account) and the email that opens contains a short download link,
+// because links that open an email can't attach files (gmail.js attaches it for real where it can).
+// Also shows the "Files you've shared" list.
 window.PdfShare = (function () {
   const BUCKET = "school-files";
   const MAX_BYTES = 10 * 1024 * 1024;
@@ -53,12 +54,29 @@ window.PdfShare = (function () {
     return data.signedUrl;
   }
 
+  // A short link (.../f/?Ab3dE9xY) that opens the long download link, so emails don't carry a huge URL.
+  function newCode() {
+    const letters = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+    return [...crypto.getRandomValues(new Uint8Array(10))].map((n) => letters[n % letters.length]).join("");
+  }
+
+  const shortUrl = (code) => `${window.APP_CONFIG.shareLinkBase}${code}`;
+
+  async function makeShortLink(path, name, url) {
+    if (!window.APP_CONFIG.shareLinkBase) return null;
+    const code = newCode();
+    const { error } = await db.from("share_links").insert({ code, path, name, url });
+    // Not set up in the database yet (or it failed): the email just gets the long link.
+    return error ? null : shortUrl(code);
+  }
+
   // Uploads one PDF to the account's folder and returns its name, size and a download link.
   async function uploadPdf(file) {
     const path = `${currentUser.id}/${storageName(file)}`;
     const { error } = await db.storage.from(BUCKET).upload(path, file, { contentType: "application/pdf", upsert: false });
     if (error) throw error;
-    return { name: file.name, size: file.size, url: await makeLink(path, file.name) };
+    const url = await makeLink(path, file.name);
+    return { name: file.name, size: file.size, url: (await makeShortLink(path, file.name, url)) || url };
   }
 
   // In a browser (Chromebook version), open the email tab during the click so it isn't blocked as a
@@ -90,6 +108,9 @@ window.PdfShare = (function () {
       return;
     }
     const files = (data || []).filter((f) => f.name && f.id !== null);
+    // Short links already made for these files (none if the database isn't set up for them yet).
+    const { data: links } = await db.from("share_links").select("code, path");
+    const codes = new Map((links || []).map((link) => [link.path, link.code]));
     if (files.length === 0) {
       list.replaceChildren(UI.h("li", { class: "empty", text: "Nothing shared yet." }));
       return;
@@ -101,7 +122,7 @@ window.PdfShare = (function () {
       const copy = UI.h("button", { type: "button", class: "chip-btn", text: "Copy link" });
       copy.addEventListener("click", async () => {
         try {
-          await navigator.clipboard.writeText(await makeLink(path, name));
+          await navigator.clipboard.writeText(codes.has(path) ? shortUrl(codes.get(path)) : await makeLink(path, name));
           copy.textContent = "Copied!";
         } catch {
           copy.textContent = "Couldn't copy";
@@ -118,6 +139,7 @@ window.PdfShare = (function () {
           setMessage(`Couldn't remove it: ${friendlyError(removeError)}`);
           return;
         }
+        await db.from("share_links").delete().eq("path", path);
         loadShared();
       });
       const size = file.metadata && file.metadata.size ? ` · ${formatSize(file.metadata.size)}` : "";
