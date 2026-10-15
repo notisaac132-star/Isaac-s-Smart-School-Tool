@@ -139,7 +139,7 @@ window.QuickSubmit = (function () {
     return { to: [teacher.email], subject: subjectFor(assignment), body };
   }
 
-  // Gmail on Chromebook / web attaches the PDF by itself; everywhere else the student adds it.
+  // Gmail attaches the PDF by itself (once Google sign-in is set up); everywhere else the student adds it.
   const autoAttach = (provider) => provider === "gmail" && Boolean(window.GmailAttach && window.GmailAttach.available());
 
   function renderHint() {
@@ -159,6 +159,10 @@ window.QuickSubmit = (function () {
 
   // After a wait the browser may block a new tab, so if it does, offer a button to open the email instead.
   function openOrOffer(tab, url) {
+    if (window.desktop) {
+      window.EmailSetup.openEmail(url); // in the chosen Chrome profile
+      return;
+    }
     if (tab && !tab.closed) {
       tab.location.href = url;
       return;
@@ -172,17 +176,23 @@ window.QuickSubmit = (function () {
     $("quick-message").append(" ", open);
   }
 
-  // Gmail with Google sign-in (Chromebook / web): a Gmail draft with the PDF really attached.
+  // Gmail with Google sign-in: a Gmail draft with the PDF really attached.
   // Returns "" when done, or what went wrong.
   async function submitAttached(teacher, assignment) {
     const gmail = window.GmailAttach;
     const signedIn = gmail.hasToken();
-    const tab = signedIn ? window.open("", "_blank") : null;
+    const tab = signedIn && !window.desktop ? window.open("", "_blank") : null;
     const sending = file;
     try {
-      // Opens Google's sign-in pop-up the first time; it has to start before any other waiting.
-      const asking = gmail.getToken(window.EmailSetup.gmailAccount());
-      setMessage(signedIn ? `Attaching ${sending.name}…` : "Sign in with Google to attach your PDF…", false);
+      // Opens Google's sign-in the first time; on the web it has to start before any other waiting.
+      const asking = gmail.getToken(window.EmailSetup.gmailAccount(), window.EmailSetup.profileDir());
+      if (signedIn) setMessage(`Attaching ${sending.name}…`, false);
+      else if (gmail.desktop()) {
+        setMessage("Sign in with Google in the browser tab that just opened, then come back here…", false);
+        const cancel = UI.h("button", { type: "button", class: "ghost-btn", text: "Cancel" });
+        cancel.addEventListener("click", () => gmail.cancel());
+        $("quick-message").append(" ", cancel);
+      } else setMessage("Sign in with Google to attach your PDF…", false);
       await asking;
       setMessage(`Attaching ${sending.name}…`, false);
       const url = await gmail.createDraft({ ...buildEmail(teacher, assignment), file: sending });

@@ -10,4 +10,10 @@ contextBridge.exposeInMainWorld("desktop", {
   savePdf: (name, bytes) => ipcRenderer.invoke("save-pdf", name, bytes),
   // Starts dragging that saved file out of the app (call from a dragstart event).
   dragFile: (filePath) => ipcRenderer.send("drag-file", filePath),
+  // Google sign-in in the student's browser (Chrome profile), for attaching PDFs to Gmail drafts.
+  googleSignIn: (clientId, loginHint, profileDir) => ipcRenderer.invoke("google-sign-in", clientId, loginHint || "", profileDir || ""),
+  googleCancel: () => ipcRenderer.invoke("google-cancel"),
+  googleSignedIn: () => ipcRenderer.invoke("google-signed-in"),
+  // Calls Gmail with that sign-in: { ok, status, text }.
+  gmailFetch: (pathname, options) => ipcRenderer.invoke("gmail-fetch", pathname, options),
 });

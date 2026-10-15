@@ -43,6 +43,12 @@ window.EmailSetup = (function () {
     return meta().school_account || "";
   }
 
+  // The Chrome profile chosen on this computer (desktop app), "" if none.
+  function profileDir() {
+    const saved = isDesktop ? readLocal() : null;
+    return (saved && saved.profileDir) || "";
+  }
+
   // Opens a ready-made email link the way the student set up.
   function openEmail(url) {
     if (isDesktop) {
@@ -168,5 +174,5 @@ window.EmailSetup = (function () {
 
   $("email-setup-save").addEventListener("click", save);
 
-  return { isDone, gmailAccount, openEmail, enter };
+  return { isDone, gmailAccount, openEmail, enter, profileDir };
 })();

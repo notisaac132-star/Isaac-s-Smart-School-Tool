@@ -34,7 +34,7 @@ and the [**install guide**](INSTALL.md) walks you through it step by step.
 - 🎮 **Console-style home screen.** Two rows of big app icons you move through with the arrow keys, mouse, touch or a game controller, on a dark background with falling white dots.
 - ⏱️ **Log study time.** What you studied, how long, which day, and a note for your teacher.
 - ✈️ **Send your weekly report.** One click opens an email (Proton Mail, Gmail, Outlook or your email app) with your study time per subject, each session and the total, already addressed to your teachers. Send it on Sunday or **early** any day; the next report only includes what's new.
-- ⚡ **Quick submit.** Drop your assignment PDF, pick your teacher, name it, Submit. The email is preset: *"SMART SCHOOL TOOL: Isaac Submitted An Assignment: Worksheet 4"*. The PDF goes in as an **attachment**, never a link: with Gmail on a Chromebook it's attached for you, otherwise you drag it into the email that opens.
+- ⚡ **Quick submit.** Drop your assignment PDF, pick your teacher, name it, Submit. The email is preset: *"SMART SCHOOL TOOL: Isaac Submitted An Assignment: Worksheet 4"*. The PDF goes in as an **attachment**, never a link: with Gmail it's attached for you, otherwise you drag it into the email that opens.
 - 👥 **Teachers & tutors.** Add as many as you like and choose who gets the report.
 - 🔐 **Your own account.** Sign up with email and password; everything follows you to any computer you log in on.
 - 💖 **Donate.** Support the project with Cash App or PayPal.
@@ -122,7 +122,7 @@ sh chromebook/build.sh out/app 1.0.0       # Chromebook app into out/app
 
 ### Gmail attachments (optional)
 
-On Chromebook and the web, Quick submit attaches the PDF to a Gmail draft by itself. It needs a Google OAuth
+With Gmail, Quick submit attaches the PDF to a Gmail draft by itself (Chromebook, web, Windows and Mac). It needs a Google OAuth
 Client ID in `googleClientId` in `src/config.js` (it's public, like the Supabase key; already set up):
 
 1. Create a project at [console.cloud.google.com](https://console.cloud.google.com/projectcreate).
@@ -133,8 +133,8 @@ Client ID in `googleClientId` in `src/config.js` (it's public, like the Supabase
 5. **Audience**: add the students' Gmail addresses as **test users** (up to 100), or **Publish app** (Google then shows
    an "unverified app" warning until the app is verified).
 6. **Clients → Create client → Web application**, add `https://notisaac132-star.github.io` under **Authorized
-   JavaScript origins**, and copy the Client ID into `src/config.js`.
+   JavaScript origins** and `http://localhost:53682/` under **Authorized redirect URIs** (the Windows/Mac apps sign
+   in through the browser and come back there), and copy the Client ID into `src/config.js`.
 
-Without it (and in the Windows/Mac apps, where Google doesn't allow its sign-in, or if a school account blocks the
-sign-in), the email opens ready to send and the student attaches the PDF: the desktop apps show it as a file to drag
-into the email.
+Without it (or if a school account blocks the sign-in), the email opens ready to send and the student attaches the
+PDF: the desktop apps show it as a file to drag into the email.
