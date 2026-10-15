@@ -1,8 +1,9 @@
-// Game-console style home screen: a row of big icons you move through with the arrow keys,
+// Game-console style home screen: two rows of big icons you move through with the arrow keys,
 // the mouse, touch or a game controller. Enter / A opens the selected one; B goes back home.
 window.ConsoleHome = (function () {
   const home = document.getElementById("home");
-  const tiles = [...document.querySelectorAll("#console-row .console-tile")];
+  const row = document.getElementById("console-row");
+  const tiles = [...row.querySelectorAll(".console-tile")];
   const title = document.getElementById("console-title");
   const desc = document.getElementById("console-desc");
   const stat = document.getElementById("console-stat");
@@ -23,7 +24,15 @@ window.ConsoleHome = (function () {
     refresh();
     const tile = tiles[index];
     if (focus) tile.focus({ preventScroll: true });
-    tile.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+    tile.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  // Left/right go through every icon; up/down jump a row (staying put at the top or bottom).
+  const columns = () => getComputedStyle(row).gridTemplateColumns.split(" ").length || 1;
+  function move(direction) {
+    if (direction === "left" || direction === "right") return select(index + (direction === "right" ? 1 : -1));
+    const next = index + (direction === "down" ? columns() : -columns());
+    if (next >= 0 && next < tiles.length) select(next);
   }
 
   function open() {
@@ -51,12 +60,10 @@ window.ConsoleHome = (function () {
 
   document.addEventListener("keydown", (event) => {
     if (!isHomeVisible() || event.target.matches("input, textarea, select")) return;
-    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+    const direction = { ArrowRight: "right", ArrowLeft: "left", ArrowUp: "up", ArrowDown: "down" }[event.key];
+    if (direction) {
       event.preventDefault();
-      select(index + 1);
-    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-      event.preventDefault();
-      select(index - 1);
+      move(direction);
     } else if ((event.key === "Enter" || event.key === " ") && tiles.includes(document.activeElement)) {
       event.preventDefault();
       open();
@@ -87,14 +94,15 @@ window.ConsoleHome = (function () {
     const pad = pads[0];
     const pressed = (i) => pad.buttons[i] && pad.buttons[i].pressed;
     const x = pad.axes[0] || 0;
-    const right = pressed(15) || x > 0.6;
-    const left = pressed(14) || x < -0.6;
+    const y = pad.axes[1] || 0;
+    const direction = pressed(15) || x > 0.6 ? "right" : pressed(14) || x < -0.6 ? "left"
+      : pressed(13) || y > 0.6 ? "down" : pressed(12) || y < -0.6 ? "up" : null;
 
-    if (isHomeVisible() && (left || right) && now - lastMove > 220) {
-      select(index + (right ? 1 : -1));
+    if (isHomeVisible() && direction && now - lastMove > 220) {
+      move(direction);
       lastMove = now;
     }
-    if (!left && !right) lastMove = 0;
+    if (!direction) lastMove = 0;
 
     // Only act when a button goes down, not while it's held.
     const down = new Set([0, 1].filter(pressed));
@@ -114,7 +122,7 @@ window.ConsoleHome = (function () {
 
   // Keep the selected icon on screen when the window changes size.
   window.addEventListener("resize", () => {
-    if (isHomeVisible()) tiles[index].scrollIntoView({ block: "nearest", inline: "center" });
+    if (isHomeVisible()) tiles[index].scrollIntoView({ block: "nearest" });
   });
 
   // Coming back to the home screen keeps the icon you had selected.

@@ -1,10 +1,10 @@
 // Quick submit: drop one assignment PDF, pick a teacher, type (or keep) the assignment name, Submit.
-// Uses the same private upload + download link as "Send a PDF" (files.js), with a preset email:
+// The PDF is uploaded privately and the email gets a download link (files.js), with a preset email:
 // subject "SMART SCHOOL TOOL: <student> Submitted An Assignment: <assignment>".
 window.QuickSubmit = (function () {
   const TEACHER_KEY = "smartSchoolTool.quickTeacher";
   const $ = (id) => document.getElementById(id);
-  const files = () => window.FilesPage;
+  const files = () => window.PdfShare;
   let file = null;
   let nameWasAutoFilled = false;
 
@@ -193,6 +193,7 @@ window.QuickSubmit = (function () {
     }
     renderTeachers();
     render();
+    files().loadShared();
   }
 
   return { enter, take };

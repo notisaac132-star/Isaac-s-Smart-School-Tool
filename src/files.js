@@ -1,22 +1,18 @@
-// "Send a PDF": drop PDFs, add a note, pick teachers. The PDFs are uploaded privately to the account
-// (Supabase Storage, bucket "school-files", one folder per account) and the email that opens contains
-// a download link for each one, because links that open an email can't attach files.
-window.FilesPage = (function () {
+// PDF uploads for Quick submit. The PDF is uploaded privately to the account (Supabase Storage, bucket
+// "school-files", one folder per account) and the email that opens contains a download link, because
+// links that open an email can't attach files. Also shows the "Files you've shared" list.
+window.PdfShare = (function () {
   const BUCKET = "school-files";
-  const MAX_FILES = 5;
   const MAX_BYTES = 10 * 1024 * 1024;
   const LINK_DAYS = 365;
 
   const $ = (id) => document.getElementById(id);
-  const dropZone = $("drop-zone");
-  const input = $("file-input");
-  let picked = [];
 
-  function setMessage(text, isError = true) {
-    const el = $("files-message");
+  function setMessage(text) {
+    const el = $("quick-message");
     el.textContent = text || "";
-    el.classList.toggle("error", Boolean(text) && isError);
-    el.classList.toggle("success", Boolean(text) && !isError);
+    el.classList.toggle("error", Boolean(text));
+    el.classList.remove("success");
   }
 
   function formatSize(bytes) {
@@ -34,93 +30,16 @@ window.FilesPage = (function () {
   // "1697040000000-ab12-My-Worksheet.pdf" -> "My-Worksheet.pdf"
   const displayName = (key) => key.replace(/^\d+-[a-z0-9]{4}-/, "");
 
-  // ---------- Picking files ----------
-
-  function addFiles(fileList) {
-    const rejected = [];
-    for (const file of fileList) {
-      if (!isPdf(file)) rejected.push(`${file.name} isn't a PDF`);
-      else if (file.size > MAX_BYTES) rejected.push(`${file.name} is over 10 MB`);
-      else if (picked.length >= MAX_FILES) rejected.push(`only ${MAX_FILES} PDFs at a time`);
-      else if (!picked.some((f) => f.name === file.name && f.size === file.size)) picked.push(file);
-    }
-    renderPicked();
-    setMessage(rejected.length ? `Skipped: ${rejected.join("; ")}.` : "");
-  }
-
-  function renderPicked() {
-    $("picked-files").replaceChildren(...picked.map((file, i) => UI.h("li", {},
-      UI.h("span", { class: "picked-name" }, "📄 ", file.name, UI.h("span", { class: "picked-size", text: ` · ${formatSize(file.size)}` })),
-      UI.h("button", {
-        type: "button",
-        class: "remove-btn",
-        text: "Remove",
-        onclick: () => {
-          picked.splice(i, 1);
-          renderPicked();
-        },
-      }))));
-    dropZone.classList.toggle("has-files", picked.length > 0);
-  }
-
-  input.addEventListener("change", () => {
-    addFiles(input.files);
-    input.value = "";
-  });
-  dropZone.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      input.click();
-    }
-  });
-  ["dragenter", "dragover"].forEach((type) => dropZone.addEventListener(type, (event) => {
-    event.preventDefault();
-    dropZone.classList.add("dragging");
-  }));
-  ["dragleave", "dragend"].forEach((type) => dropZone.addEventListener(type, () => dropZone.classList.remove("dragging")));
-  dropZone.addEventListener("drop", (event) => {
-    event.preventDefault();
-    dropZone.classList.remove("dragging");
-    addFiles(event.dataTransfer.files);
-  });
-
-  // A file dropped anywhere else would make the window open the PDF instead of the app; on this page
-  // treat it as a drop on the drop zone, and everywhere else just ignore it.
+  // A file dropped outside the drop box would make the window open the PDF instead of the app; on the
+  // Quick submit page treat it as a drop on the box, and everywhere else just ignore it.
   document.addEventListener("dragover", (event) => event.preventDefault());
   document.addEventListener("drop", (event) => {
     event.preventDefault();
     if (!event.dataTransfer || !event.dataTransfer.files.length) return;
-    if (location.hash === "#files") addFiles(event.dataTransfer.files);
-    else if (location.hash === "#quick" && window.QuickSubmit) window.QuickSubmit.take(event.dataTransfer.files);
+    if (location.hash === "#quick" && window.QuickSubmit) window.QuickSubmit.take(event.dataTransfer.files);
   });
 
-  // ---------- Who gets it ----------
-
-  function renderRecipients() {
-    const people = [...contacts.teachers, ...contacts.tutors];
-    const box = $("file-recipients");
-    if (people.length === 0) {
-      box.replaceChildren(UI.h("p", { class: "section-hint", text: "Add a teacher in Teachers & Tutors first." }));
-      return;
-    }
-    const previouslyChecked = new Set([...box.querySelectorAll("input:checked")].map((el) => el.value));
-    const firstTime = box.querySelectorAll("input").length === 0;
-    box.replaceChildren(...people.map((person) => UI.h("label", { class: "report-toggle recipient" },
-      UI.h("input", {
-        type: "checkbox",
-        value: person.id,
-        checked: firstTime ? person.kind === "teacher" : previouslyChecked.has(person.id),
-      }),
-      ` ${person.name}`,
-      UI.h("span", { class: "picked-size", text: person.kind === "tutor" ? " (tutor)" : "" }))));
-  }
-
-  function chosenRecipients() {
-    const ids = new Set([...$("file-recipients").querySelectorAll("input:checked")].map((el) => el.value));
-    return [...contacts.teachers, ...contacts.tutors].filter((person) => ids.has(person.id));
-  }
-
-  // ---------- Sending ----------
+  // ---------- Uploading ----------
 
   function linkExpiry() {
     const date = new Date();
@@ -133,28 +52,6 @@ window.FilesPage = (function () {
     if (error) throw error;
     return data.signedUrl;
   }
-
-  function buildEmail(recipients, uploaded, note) {
-    const name = (currentUser.user_metadata && currentUser.user_metadata.name) || "";
-    const subject = uploaded.length === 1
-      ? `${name ? `${name}: ` : ""}${uploaded[0].name}`
-      : `School files${name ? ` from ${name}` : ""} (${uploaded.length} PDFs)`;
-    const body = [
-      `Hi ${joinNames(recipients.map((c) => c.name))},`,
-      "",
-      ...(note ? [note, ""] : []),
-      uploaded.length === 1 ? "Here's the file:" : "Here are the files:",
-      ...uploaded.map((file) => `- ${file.name} (${formatSize(file.size)}): ${file.url}`),
-      "",
-      `(The download ${uploaded.length === 1 ? "link works" : "links work"} until ${linkExpiry()}.)`,
-      "",
-      "Thanks,",
-      name,
-    ].join("\n").trimEnd();
-    return { to: recipients.map((c) => c.email), subject, body };
-  }
-
-  // ---------- Shared with Quick submit ----------
 
   // Uploads one PDF to the account's folder and returns its name, size and a download link.
   async function uploadPdf(file) {
@@ -182,38 +79,6 @@ window.FilesPage = (function () {
       : `Couldn't upload: ${friendlyError(error)}`;
   }
 
-  async function send() {
-    if (!db || !currentUser) return;
-    if (picked.length === 0) return setMessage("Drag in a PDF (or click the box) first.");
-    const recipients = chosenRecipients();
-    if (recipients.length === 0) return setMessage("Tick at least one teacher to send it to.");
-
-    const button = $("send-files");
-    button.disabled = true;
-    const provider = $("file-provider").value;
-    const tab = openEmailTab(provider);
-    try {
-      const uploaded = [];
-      for (const [i, file] of picked.entries()) {
-        setMessage(`Uploading ${i + 1} of ${picked.length}: ${file.name}…`, false);
-        uploaded.push(await uploadPdf(file));
-      }
-      showEmail(tab, composeUrl(provider, buildEmail(recipients, uploaded, $("file-note").value.trim())));
-      setMessage(`Uploaded ${plural(uploaded.length, "PDF")}. Your email is open: check it and press Send.`, false);
-      picked = [];
-      renderPicked();
-      $("file-note").value = "";
-      loadShared();
-    } catch (error) {
-      if (tab && !tab.closed) tab.close();
-      setMessage(uploadErrorMessage(error));
-    } finally {
-      button.disabled = false;
-    }
-  }
-
-  $("send-files").addEventListener("click", send);
-
   // ---------- Files you've shared ----------
 
   async function loadShared() {
@@ -225,8 +90,6 @@ window.FilesPage = (function () {
       return;
     }
     const files = (data || []).filter((f) => f.name && f.id !== null);
-    $("files-summary").textContent = files.length ? `${plural(files.length, "file")} shared` : "Drag and drop a PDF to send it";
-    if (window.ConsoleHome) window.ConsoleHome.refresh();
     if (files.length === 0) {
       list.replaceChildren(UI.h("li", { class: "empty", text: "Nothing shared yet." }));
       return;
@@ -266,30 +129,5 @@ window.FilesPage = (function () {
     }));
   }
 
-  // ---------- Page setup ----------
-
-  function loadProvider() {
-    try {
-      const saved = localStorage.getItem(PROVIDER_KEY);
-      if (saved) $("file-provider").value = saved;
-    } catch {
-      // Not remembering the choice is fine.
-    }
-  }
-  $("file-provider").addEventListener("change", () => {
-    try {
-      localStorage.setItem(PROVIDER_KEY, $("file-provider").value);
-    } catch {
-      // Not remembering the choice is fine.
-    }
-  });
-
-  // Called by app.js whenever the Send a PDF page is shown.
-  function enter() {
-    loadProvider();
-    renderRecipients();
-    loadShared();
-  }
-
-  return { enter, loadShared, isPdf, formatSize, MAX_BYTES, linkExpiry, uploadPdf, openEmailTab, showEmail, uploadErrorMessage };
+  return { loadShared, isPdf, formatSize, MAX_BYTES, linkExpiry, uploadPdf, openEmailTab, showEmail, uploadErrorMessage };
 })();
