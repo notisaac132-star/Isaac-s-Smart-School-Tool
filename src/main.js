@@ -5,6 +5,7 @@ const os = require("os");
 const path = require("path");
 const { setupAutoUpdates } = require("./updater");
 const chrome = require("./chrome");
+const google = require("./google");
 
 // Email links can open in a chosen Chrome profile (e.g. "School"); see chrome.js and preload.js.
 ipcMain.handle("chrome-profiles", () => chrome.listProfiles());
@@ -14,6 +15,16 @@ ipcMain.handle("open-email", (_event, url, profileDir) => {
   shell.openExternal(url);
   return true;
 });
+
+// Gmail attachments: Google sign-in in the student's browser (see google.js).
+const openInBrowser = (url, profileDir) => {
+  if (!(profileDir && chrome.openInProfile(url, profileDir))) shell.openExternal(url);
+};
+ipcMain.handle("google-sign-in", (_event, clientId, loginHint, profileDir) =>
+  google.getToken({ clientId, loginHint, open: (url) => openInBrowser(url, profileDir) }));
+ipcMain.handle("google-cancel", () => google.cancelSignIn());
+ipcMain.handle("google-signed-in", () => google.hasToken());
+ipcMain.handle("gmail-fetch", (_event, pathname, options) => google.gmailFetch(pathname, options));
 
 // Quick submit: the PDF is saved to a temporary folder so it can be dragged into an email as an attachment.
 const dragFolder = path.join(os.tmpdir(), "Smart School Tool");
