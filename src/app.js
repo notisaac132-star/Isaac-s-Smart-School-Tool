@@ -52,7 +52,7 @@ function needsSetup() {
 }
 
 function showView() {
-  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study", "#donate": "donate", "#files": "files" };
+  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study", "#donate": "donate", "#files": "files", "#quick": "quick" };
   let id = routes[location.hash] || "home";
   if (!currentUser) id = "auth";
   // New accounts have to add a teacher before anything else.
@@ -69,6 +69,7 @@ function showView() {
   });
   if (id === "study") prepareStudyForm();
   if (id === "files" && window.FilesPage) window.FilesPage.enter();
+  if (id === "quick" && window.QuickSubmit) window.QuickSubmit.enter();
   window.scrollTo(0, 0);
   if (id === "study" && location.hash === "#send") document.querySelector(".send-card").scrollIntoView({ block: "start" });
 }

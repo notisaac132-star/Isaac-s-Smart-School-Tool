@@ -89,7 +89,9 @@ window.FilesPage = (function () {
   document.addEventListener("dragover", (event) => event.preventDefault());
   document.addEventListener("drop", (event) => {
     event.preventDefault();
-    if (location.hash === "#files" && event.dataTransfer && event.dataTransfer.files.length) addFiles(event.dataTransfer.files);
+    if (!event.dataTransfer || !event.dataTransfer.files.length) return;
+    if (location.hash === "#files") addFiles(event.dataTransfer.files);
+    else if (location.hash === "#quick" && window.QuickSubmit) window.QuickSubmit.take(event.dataTransfer.files);
   });
 
   // ---------- Who gets it ----------
@@ -152,6 +154,34 @@ window.FilesPage = (function () {
     return { to: recipients.map((c) => c.email), subject, body };
   }
 
+  // ---------- Shared with Quick submit ----------
+
+  // Uploads one PDF to the account's folder and returns its name, size and a download link.
+  async function uploadPdf(file) {
+    const path = `${currentUser.id}/${storageName(file)}`;
+    const { error } = await db.storage.from(BUCKET).upload(path, file, { contentType: "application/pdf", upsert: false });
+    if (error) throw error;
+    return { name: file.name, size: file.size, url: await makeLink(path, file.name) };
+  }
+
+  // In a browser (Chromebook version), open the email tab during the click so it isn't blocked as a
+  // pop-up after the upload finishes. The desktop app opens links in the normal browser instead.
+  function openEmailTab(provider) {
+    const isDesktopApp = /Electron/i.test(navigator.userAgent);
+    return !isDesktopApp && provider !== "mailto" ? window.open("", "_blank") : null;
+  }
+
+  function showEmail(tab, url) {
+    if (tab && !tab.closed) tab.location.href = url;
+    else window.open(url, "_blank");
+  }
+
+  function uploadErrorMessage(error) {
+    return /bucket not found|not found/i.test((error && error.message) || "")
+      ? "Sending PDFs isn't switched on yet (the files storage hasn't been set up)."
+      : `Couldn't upload: ${friendlyError(error)}`;
+  }
+
   async function send() {
     if (!db || !currentUser) return;
     if (picked.length === 0) return setMessage("Drag in a PDF (or click the box) first.");
@@ -160,23 +190,15 @@ window.FilesPage = (function () {
 
     const button = $("send-files");
     button.disabled = true;
-    // In a browser (Chromebook version), open the tab now, while the click still counts as a click, so it
-    // isn't blocked as a pop-up after the upload. The desktop app opens links in the normal browser instead.
     const provider = $("file-provider").value;
-    const isDesktopApp = /Electron/i.test(navigator.userAgent);
-    const tab = !isDesktopApp && provider !== "mailto" ? window.open("", "_blank") : null;
+    const tab = openEmailTab(provider);
     try {
       const uploaded = [];
       for (const [i, file] of picked.entries()) {
         setMessage(`Uploading ${i + 1} of ${picked.length}: ${file.name}…`, false);
-        const path = `${currentUser.id}/${storageName(file)}`;
-        const { error } = await db.storage.from(BUCKET).upload(path, file, { contentType: "application/pdf", upsert: false });
-        if (error) throw error;
-        uploaded.push({ name: file.name, size: file.size, url: await makeLink(path, file.name) });
+        uploaded.push(await uploadPdf(file));
       }
-      const url = composeUrl(provider, buildEmail(recipients, uploaded, $("file-note").value.trim()));
-      if (tab && !tab.closed) tab.location.href = url;
-      else window.open(url, "_blank");
+      showEmail(tab, composeUrl(provider, buildEmail(recipients, uploaded, $("file-note").value.trim())));
       setMessage(`Uploaded ${plural(uploaded.length, "PDF")}. Your email is open: check it and press Send.`, false);
       picked = [];
       renderPicked();
@@ -184,9 +206,7 @@ window.FilesPage = (function () {
       loadShared();
     } catch (error) {
       if (tab && !tab.closed) tab.close();
-      setMessage(/bucket not found|not found/i.test(error.message || "")
-        ? "Sending PDFs isn't switched on yet (the files storage hasn't been set up)."
-        : `Couldn't upload: ${friendlyError(error)}`);
+      setMessage(uploadErrorMessage(error));
     } finally {
       button.disabled = false;
     }
@@ -271,5 +291,5 @@ window.FilesPage = (function () {
     loadShared();
   }
 
-  return { enter, loadShared };
+  return { enter, loadShared, isPdf, formatSize, MAX_BYTES, linkExpiry, uploadPdf, openEmailTab, showEmail, uploadErrorMessage };
 })();

@@ -72,6 +72,14 @@
 
     <!-- The row of big icons. Arrow keys / controller move, Enter / A opens. -->
     <nav class="console-row" id="console-row" aria-label="Apps">
+      <a class="console-tile" href="#quick" data-color="teal" data-title="Quick submit"
+         data-desc="Drop your assignment PDF, pick your teacher, done.">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M27 4L10 27h13l-2 17 17-23H25z"/>
+        </svg>
+        <span class="console-label">Quick submit</span>
+        <span class="console-stat">Hand in an assignment in one click</span>
+      </a>
       <a class="console-tile" href="#study" data-color="blue" data-title="Log study time"
          data-desc="Write down what you studied and for how long.">
         <svg viewBox="0 0 48 48" aria-hidden="true">
@@ -176,6 +184,53 @@
       <h2 id="amount-title">Choose an amount</h2>
       <div class="amounts" id="amounts"></div>
       <p class="form-message" id="donate-message" role="status"></p>
+    </section>
+  </main>
+
+  <!-- Quick submit -->
+  <main class="view" id="quick" hidden>
+    <div class="view-header">
+      <a class="back" href="#home">← Home</a>
+      <h1>⚡ Quick submit</h1>
+    </div>
+
+    <section class="card quick-card">
+      <label class="drop-zone" id="quick-drop" tabindex="0">
+        <input type="file" id="quick-input" accept="application/pdf,.pdf" hidden>
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M12 5h17l9 9v29H12z"/>
+          <path d="M29 5v9h9M24 36V21M18 27l6-6 6 6"/>
+        </svg>
+        <strong id="quick-drop-title">Drop your assignment PDF here</strong>
+        <span id="quick-drop-hint">or click to choose it · 10 MB max</span>
+      </label>
+
+      <div class="quick-fields">
+        <label class="field">
+          <span>Assignment name</span>
+          <input id="quick-name" type="text" maxlength="120" placeholder="e.g. Worksheet 4">
+        </label>
+        <label class="field">
+          <span>Teacher</span>
+          <select id="quick-teacher"></select>
+        </label>
+      </div>
+
+      <p class="quick-preview" id="quick-preview"></p>
+
+      <div class="send-row">
+        <label class="field">
+          <span>Send with</span>
+          <select id="quick-provider">
+            <option value="proton">Proton Mail</option>
+            <option value="gmail">Gmail</option>
+            <option value="outlook">Outlook</option>
+            <option value="mailto">My computer's email app</option>
+          </select>
+        </label>
+        <button type="button" id="quick-submit" class="quick-btn">⚡ Submit</button>
+      </div>
+      <p class="form-message" id="quick-message" role="status"></p>
     </section>
   </main>
 
@@ -378,5 +433,6 @@
   <script src="home.js"></script>
   <script src="donate.js"></script>
   <script src="files.js"></script>
+  <script src="quick.js"></script>
 </body>
 </html>
