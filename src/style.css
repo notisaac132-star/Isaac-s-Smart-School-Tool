@@ -467,7 +467,7 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: clamp(1.2rem, 2.6vw, 2.1rem);
+  gap: clamp(1rem, 2.2vw, 2.1rem);
   margin-top: auto;
   padding: 3.5rem 1.5rem 4rem;
 }
@@ -479,8 +479,8 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
   position: relative;
   flex: 0 0 auto;
   /* Shrinks on smaller windows so the whole row fits; phones scroll instead (see below). */
-  width: clamp(96px, 12.5vw, 150px);
-  height: clamp(96px, 12.5vw, 150px);
+  width: clamp(84px, 11vw, 150px);
+  height: clamp(84px, 11vw, 150px);
   border-radius: clamp(22px, 2.6vw, 30px);
   display: grid;
   place-items: center;
@@ -648,3 +648,36 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
 @media (max-width: 480px) {
   .pay-methods { grid-template-columns: 1fr; }
 }
+
+/* Send a PDF */
+.console-tile[data-color="orange"] { --from: #ffa94d; --to: #e8590c; }
+
+.drop-zone {
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+  padding: 2rem 1rem;
+  border: 2px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  background: var(--field);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.drop-zone svg { width: 48px; height: 48px; fill: none; stroke: #ffa94d; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.drop-zone strong { font-size: 1.1rem; }
+.drop-zone span { color: var(--muted); font-size: 0.9rem; }
+.drop-zone:hover, .drop-zone:focus-visible { border-color: #ffa94d; outline: none; }
+.drop-zone.dragging { border-color: #ffa94d; background: rgba(255, 169, 77, 0.12); }
+
+.picked-files { list-style: none; padding: 0; margin: 0.75rem 0 1rem; }
+.picked-files li { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+.picked-name { min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
+.picked-size { color: var(--muted); font-weight: 400; }
+
+#files .field { display: grid; gap: 0.3rem; margin-bottom: 1rem; }
+.recipient-picker { border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 0.9rem 0.8rem; margin: 0 0 1rem; }
+.recipient-picker legend { color: var(--muted); font-size: 0.9rem; padding: 0 0.3rem; }
+.recipient-picker .recipient { display: flex; margin-top: 0.35rem; color: var(--text); font-size: 0.95rem; }
+.files-privacy { margin: 0.9rem 0 0; }
+.shared-actions { display: flex; gap: 0.5rem; flex-shrink: 0; align-items: center; }

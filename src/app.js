@@ -52,7 +52,7 @@ function needsSetup() {
 }
 
 function showView() {
-  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study", "#donate": "donate" };
+  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study", "#donate": "donate", "#files": "files" };
   let id = routes[location.hash] || "home";
   if (!currentUser) id = "auth";
   // New accounts have to add a teacher before anything else.
@@ -68,6 +68,7 @@ function showView() {
     view.hidden = view.id !== id;
   });
   if (id === "study") prepareStudyForm();
+  if (id === "files" && window.FilesPage) window.FilesPage.enter();
   window.scrollTo(0, 0);
   if (id === "study" && location.hash === "#send") document.querySelector(".send-card").scrollIntoView({ block: "start" });
 }
@@ -170,6 +171,7 @@ async function onSignedIn(user) {
   {
     await importLegacyContacts();
     await Promise.all([loadContacts(), loadSessions()]);
+    if (window.FilesPage) window.FilesPage.loadShared();
     showView();
   }
 }

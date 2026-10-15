@@ -100,6 +100,15 @@
         <span class="console-label">Teachers &amp; Tutors</span>
         <span class="console-stat" id="contacts-summary">Add your teachers' and tutors' emails</span>
       </a>
+      <a class="console-tile" href="#files" data-color="orange" data-title="Send a PDF"
+         data-desc="Drag in a PDF for school and send it to your teachers with a note.">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M12 5h17l9 9v29H12z"/>
+          <path d="M29 5v9h9M24 36V21M18 27l6-6 6 6"/>
+        </svg>
+        <span class="console-label">Send a PDF</span>
+        <span class="console-stat" id="files-summary">Drag and drop a PDF to send it</span>
+      </a>
       <a class="console-tile" href="#donate" data-color="pink" data-title="Donate"
          data-desc="Like the app? Support the project with Cash App or PayPal.">
         <svg viewBox="0 0 48 48" aria-hidden="true">
@@ -167,6 +176,58 @@
       <h2 id="amount-title">Choose an amount</h2>
       <div class="amounts" id="amounts"></div>
       <p class="form-message" id="donate-message" role="status"></p>
+    </section>
+  </main>
+
+  <!-- Send a PDF -->
+  <main class="view" id="files" hidden>
+    <div class="view-header">
+      <a class="back" href="#home">← Home</a>
+      <h1>Send a PDF</h1>
+    </div>
+
+    <section class="card">
+      <label class="drop-zone" id="drop-zone" tabindex="0">
+        <input type="file" id="file-input" accept="application/pdf,.pdf" multiple hidden>
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M12 5h17l9 9v29H12z"/>
+          <path d="M29 5v9h9M24 36V21M18 27l6-6 6 6"/>
+        </svg>
+        <strong>Drag your PDF here</strong>
+        <span>or click to choose one · up to 5 PDFs, 10 MB each</span>
+      </label>
+      <ul class="picked-files" id="picked-files"></ul>
+
+      <label class="field">
+        <span>Note for your teachers</span>
+        <textarea id="file-note" rows="3" maxlength="2000" placeholder="e.g. Here's my finished worksheet for Monday."></textarea>
+      </label>
+
+      <fieldset class="recipient-picker">
+        <legend>Send to</legend>
+        <div id="file-recipients"></div>
+      </fieldset>
+
+      <div class="send-row">
+        <label class="field">
+          <span>Send with</span>
+          <select id="file-provider">
+            <option value="proton">Proton Mail</option>
+            <option value="gmail">Gmail</option>
+            <option value="outlook">Outlook</option>
+            <option value="mailto">My computer's email app</option>
+          </select>
+        </label>
+        <button type="button" id="send-files">Upload &amp; open email</button>
+      </div>
+      <p class="form-message" id="files-message" role="status"></p>
+      <p class="section-hint files-privacy">Your PDFs are stored privately in your account. Your teachers get a download
+        link that works for 1 year, and you can stop sharing any time below.</p>
+    </section>
+
+    <section class="card">
+      <h2>Files you've shared</h2>
+      <ul class="session-list" id="shared-files"></ul>
     </section>
   </main>
 
@@ -316,5 +377,6 @@
   <script src="app.js"></script>
   <script src="home.js"></script>
   <script src="donate.js"></script>
+  <script src="files.js"></script>
 </body>
 </html>
