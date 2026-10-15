@@ -10,5 +10,5 @@ window.APP_CONFIG = {
   shareLinkBase: "https://notisaac132-star.github.io/Isaac-s-Smart-School-Tool/f/?",
   // Google sign-in for attaching PDFs to Gmail drafts (Chromebook / web version). Public by design.
   // Empty = turned off (emails get a short download link instead). How to get one: README "Gmail attachments".
-  googleClientId: "",
+  googleClientId: "697926213293-krpghn7mgmn6g4rlae3nspk4lgura6e2.apps.googleusercontent.com",
 };
