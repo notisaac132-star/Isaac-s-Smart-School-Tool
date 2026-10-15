@@ -16,6 +16,15 @@ nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   artifactName: Smart-School-Tool-Windows-Setup.${ext}
+  # Custom look: pictures and wording in windows/installer (pictures made by installer/make-art.py).
+  installerIcon: windows/installer/icon.ico
+  uninstallerIcon: windows/installer/icon.ico
+  installerSidebar: windows/installer/sidebar.bmp
+  uninstallerSidebar: windows/installer/sidebar.bmp
+  installerHeader: windows/installer/header.bmp
+  include: windows/installer/installer.nsh
+  shortcutName: Smart School Tool
+  uninstallDisplayName: Smart School Tool
 portable:
   artifactName: Smart-School-Tool-Windows-Portable.${ext}
 # Where installed apps look for updates (files are uploaded by the GitHub Actions release job).

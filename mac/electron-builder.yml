@@ -18,6 +18,23 @@ mac:
   # Ad-hoc signature (no paid Apple Developer account). Required for the app to open on Apple Silicon.
   identity: "-"
   hardenedRuntime: false
+# The .dmg window: night-sky background (mac/dmg, made by installer/make-art.py; background@2x.png is the
+# Retina copy), with the app and the Applications folder on the coloured card.
+dmg:
+  title: Smart School Tool
+  background: mac/dmg/background.png
+  iconSize: 96
+  window:
+    width: 540
+    height: 380
+  contents:
+    - x: 150
+      y: 196
+      type: file
+    - x: 390
+      y: 196
+      type: link
+      path: /Applications
 # Where installed apps look for updates (files are uploaded by the GitHub Actions release job).
 publish:
   provider: github

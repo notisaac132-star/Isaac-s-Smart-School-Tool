@@ -103,6 +103,7 @@ chromebook/  Chromebook (installable web app) files
 windows/     Windows build settings
 mac/         Mac build settings
 download/    download page and password-reset page (GitHub Pages)
+installer/   make-art.py draws the installer pictures (windows/installer, mac/dmg)
 supabase/    database setup for accounts (schema.sql)
 docs/        screenshots for this page
 ```

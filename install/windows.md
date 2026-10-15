@@ -13,8 +13,9 @@
 2. **Open the file.** Click it in your browser's downloads list, or double-click it in **Downloads**.
 3. **"Windows protected your PC"?** This blue box appears because the app isn't signed with a paid certificate.
    Click **More info**, then **Run anyway**.
-4. **Follow the installer.** Click **Next**. You can keep the suggested folder. Then click **Install**, then **Finish**.
-5. **Open it.** Smart School Tool is now in your **Start menu** and on your **desktop**.
+4. **Follow the installer.** Click **Next** on the welcome screen. You can keep the suggested folder. Then click **Install**.
+5. **Open it.** On the last screen, leave **Open Smart School Tool now** ticked and click **Finish**. Later, it's in your
+   **Start menu** and on your **desktop**.
 6. **Make your account.** Click **Sign up**, enter your name, email and a password, then add your teacher's email.
 
 ## Updates
