@@ -52,7 +52,7 @@ function needsSetup() {
 }
 
 function showView() {
-  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study", "#donate": "donate", "#files": "files", "#quick": "quick", "#email-setup": "email-setup" };
+  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study", "#donate": "donate", "#files": "quick", "#quick": "quick", "#email-setup": "email-setup" };
   let id = routes[location.hash] || "home";
   if (!currentUser) id = "auth";
   // New accounts have to add a teacher before anything else.
@@ -70,7 +70,6 @@ function showView() {
     view.hidden = view.id !== id;
   });
   if (id === "study") prepareStudyForm();
-  if (id === "files" && window.FilesPage) window.FilesPage.enter();
   if (id === "quick" && window.QuickSubmit) window.QuickSubmit.enter();
   if (id === "email-setup" && window.EmailSetup) window.EmailSetup.enter();
   window.scrollTo(0, 0);
@@ -176,7 +175,7 @@ async function onSignedIn(user) {
     applySavedProvider();
     await importLegacyContacts();
     await Promise.all([loadContacts(), loadSessions()]);
-    if (window.FilesPage) window.FilesPage.loadShared();
+    if (window.PdfShare) window.PdfShare.loadShared();
     showView();
   }
 }
@@ -614,7 +613,7 @@ function applySavedProvider() {
     local = null;
   }
   const provider = local || (currentUser.user_metadata && currentUser.user_metadata.mail_provider);
-  if (provider) document.querySelectorAll("#mail-provider, #file-provider, #quick-provider").forEach((select) => (select.value = provider));
+  if (provider) document.querySelectorAll("#mail-provider, #quick-provider").forEach((select) => (select.value = provider));
 }
 
 function loadProvider() {

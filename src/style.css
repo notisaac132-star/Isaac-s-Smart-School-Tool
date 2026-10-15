@@ -463,24 +463,25 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .clock { font-size: 1.6rem; font-weight: 300; letter-spacing: 0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .clock-block .today { font-size: 0.8rem; }
 
+/* Two rows of three. The selected icon's name shows in the gap under it. */
 .console-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
   justify-content: center;
   align-items: center;
-  gap: clamp(1rem, 2.2vw, 2.1rem);
+  column-gap: clamp(1.4rem, 3vw, 2.6rem);
+  row-gap: clamp(3.6rem, 7.5vh, 4.4rem);
   margin-top: auto;
-  padding: 3.5rem 1.5rem 4rem;
+  padding: 2.5rem 1.5rem 3.5rem;
 }
-.console-row::-webkit-scrollbar { display: none; }
 
 .console-tile {
   --from: #4f7dff;
   --to: #2b4fd8;
   position: relative;
-  flex: 0 0 auto;
-  /* Shrinks on smaller windows so the whole row fits; phones scroll instead (see below). */
-  width: clamp(72px, 9.5vw, 150px);
-  height: clamp(72px, 9.5vw, 150px);
+  /* Shrinks on smaller (or shorter) windows so both rows fit. */
+  width: clamp(84px, min(13vw, 17vh), 150px);
+  height: clamp(84px, min(13vw, 17vh), 150px);
   border-radius: clamp(22px, 2.6vw, 30px);
   display: grid;
   place-items: center;
@@ -509,7 +510,7 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
 }
 
 .console-tile.selected {
-  transform: scale(1.18) translateY(-6px);
+  transform: scale(1.12);
   filter: none;
   box-shadow:
     0 0 0 4px #fff,
@@ -520,7 +521,7 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
 
 .console-label {
   position: absolute;
-  top: calc(100% + 18px);
+  top: calc(100% + 12px);
   left: 50%;
   transform: translateX(-50%) scale(0.85);
   white-space: nowrap;
@@ -582,12 +583,11 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
 }
 
 @media (max-width: 640px) {
-  /* On phones the row scrolls sideways; extra padding keeps the selected tile's glow and name inside it. */
-  .console-row { justify-content: flex-start; gap: 1.1rem; padding: 2.5rem 1.5rem 3.75rem; overflow-x: auto; scrollbar-width: none; }
+  .console-row { column-gap: 1.1rem; row-gap: 3.4rem; padding: 2rem 0.5rem 3rem; }
+  .console-tile.selected { transform: scale(1.08); }
   .profile-text .greeting { font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .avatar { width: 40px; height: 40px; font-size: 1.1rem; }
-  .console-tile { width: 112px; height: 112px; border-radius: 24px; }
-  .console-tile svg { width: 48px; height: 48px; }
+  .console-tile { width: clamp(84px, 24vw, 112px); height: clamp(84px, 24vw, 112px); border-radius: 24px; }
   .console-hints { display: none; }
   .clock { font-size: 1.25rem; }
   .clock-block .today { display: none; }
@@ -654,9 +654,7 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
   .pay-methods { grid-template-columns: 1fr; }
 }
 
-/* Send a PDF */
-.console-tile[data-color="orange"] { --from: #ffa94d; --to: #e8590c; }
-
+/* PDF drop box (Quick submit) */
 .drop-zone {
   display: grid;
   justify-items: center;
@@ -675,15 +673,6 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .drop-zone:hover, .drop-zone:focus-visible { border-color: #ffa94d; outline: none; }
 .drop-zone.dragging { border-color: #ffa94d; background: rgba(255, 169, 77, 0.12); }
 
-.picked-files { list-style: none; padding: 0; margin: 0.75rem 0 1rem; }
-.picked-files li { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
-.picked-name { min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
-.picked-size { color: var(--muted); font-weight: 400; }
-
-#files .field { display: grid; gap: 0.3rem; margin-bottom: 1rem; }
-.recipient-picker { border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 0.9rem 0.8rem; margin: 0 0 1rem; }
-.recipient-picker legend { color: var(--muted); font-size: 0.9rem; padding: 0 0.3rem; }
-.recipient-picker .recipient { display: flex; margin-top: 0.35rem; color: var(--text); font-size: 0.95rem; }
 .files-privacy { margin: 0.9rem 0 0; }
 .shared-actions { display: flex; gap: 0.5rem; flex-shrink: 0; align-items: center; }
 

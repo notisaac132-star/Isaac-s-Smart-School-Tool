@@ -161,7 +161,7 @@ window.EmailSetup = (function () {
     if (error) return setMessage(`Couldn't save: ${friendlyError(error)}`);
     if (data && data.user) currentUser = data.user;
     // Keep the email-service menus on the other pages in step.
-    document.querySelectorAll("#mail-provider, #file-provider, #quick-provider").forEach((select) => (select.value = provider));
+    document.querySelectorAll("#mail-provider, #quick-provider").forEach((select) => (select.value = provider));
     location.hash = "#home";
     showView();
   }
