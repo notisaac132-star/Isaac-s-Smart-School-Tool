@@ -213,30 +213,41 @@ window.QuickSubmit = (function () {
       UI.h("span", { class: "drag-chip-icon", text: "📄" }),
       UI.h("span", { class: "drag-chip-text" },
         UI.h("strong", { text: pdf.name }),
-        UI.h("span", { text: "Drag me into your email to attach me" })));
+        UI.h("span", { text: "Grab me" })));
     chip.addEventListener("dragstart", (event) => {
       event.preventDefault();
       window.desktop.dragFile(path);
     });
-    return chip;
+    // The email window sits on the right half of the screen, so the arrow points at it.
+    const arrow = UI.h("div", { class: "drag-arrow", "aria-hidden": "true" });
+    arrow.innerHTML = '<svg viewBox="0 0 220 48"><path d="M6 24h196M178 8l24 16-24 16"/></svg>';
+    return UI.h("div", { class: "drag-guide" },
+      chip,
+      UI.h("div", { class: "drag-arrow-wrap" }, arrow, UI.h("strong", { class: "drag-arrow-text", text: "drag and drop to this window!" })));
   }
 
   // Opens the email ready to send, and the student attaches the PDF.
   async function submitAttachYourself(teacher, assignment, provider, tab, note = "") {
     const pdf = file;
     const url = composeUrl(provider, buildEmail(teacher, assignment));
-    if (window.desktop || provider === "mailto") files().showEmail(tab, url);
     const box = $("attach-box");
     if (window.desktop) {
-      setMessage(`${note}Your email to ${teacher.name} is open. Drag your PDF into it, then press Send.`, false);
-      box.replaceChildren(await dragChip(pdf));
+      // The email gets its own window on the right half of the screen; the app moves to the left half.
+      const guide = await dragChip(pdf);
+      if (!(window.desktop.openEmailSplit && (await window.desktop.openEmailSplit(url, window.EmailSetup.profileDir())))) {
+        files().showEmail(tab, url);
+      }
+      setMessage(`${note}Your email to ${teacher.name} is open on the right. Drag your PDF into it, then press Send.`, false);
+      box.replaceChildren(guide);
     } else {
       setMessage(`${note}Your email to ${teacher.name} is open. Attach ${pdf.name} to it (📎, or drag it in from your Files app), then press Send.`, false);
       box.replaceChildren();
-      if (!(window.desktop || provider === "mailto")) openOrOffer(tab, url);
+      if (provider === "mailto") files().showEmail(tab, url);
+      else openOrOffer(tab, url);
     }
     box.hidden = box.childElementCount === 0;
     reset();
+    if (!box.hidden) box.scrollIntoView({ block: "center", behavior: "smooth" });
   }
 
   async function submit() {

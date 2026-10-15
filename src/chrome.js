@@ -59,13 +59,20 @@ function listProfiles() {
 }
 
 // Opens a web or mailto link in the given Chrome profile. Returns false if it couldn't (then the caller
-// falls back to the default browser).
-function openInProfile(url, profileDir) {
+// falls back to the default browser). `windowOptions` ({ x, y, width, height }) opens it in a new window there.
+function openInProfile(url, profileDir, windowOptions) {
   const { executable } = findChrome();
   if (!executable || !/^(https?:|mailto:)/.test(url)) return false;
   // Only ever pass a profile Chrome actually has (it's also passed as a separate argument, not via a shell).
   if (!listProfiles().profiles.some((p) => p.dir === profileDir)) return false;
-  const child = spawn(executable, [`--profile-directory=${profileDir}`, url], { detached: true, stdio: "ignore" });
+  const args = [`--profile-directory=${profileDir}`];
+  if (windowOptions) {
+    const n = (value) => Math.round(Number(value)) || 0;
+    // Chrome uses the position and size when it isn't running yet; splitscreen.js moves it otherwise.
+    args.push("--new-window", `--window-position=${n(windowOptions.x)},${n(windowOptions.y)}`,
+      `--window-size=${n(windowOptions.width)},${n(windowOptions.height)}`);
+  }
+  const child = spawn(executable, [...args, url], { detached: true, stdio: "ignore" });
   child.on("error", () => {});
   child.unref();
   return true;

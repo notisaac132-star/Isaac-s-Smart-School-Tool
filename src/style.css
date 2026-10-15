@@ -744,3 +744,18 @@ a.ghost-btn { text-decoration: none; display: inline-block; }
 .drag-chip-text { display: grid; min-width: 0; }
 .drag-chip-text strong { overflow-wrap: anywhere; }
 .drag-chip-text span { color: var(--muted); font-size: 0.9rem; }
+
+/* The PDF and the arrow pointing at the email window on the right (desktop app) */
+.drag-guide { display: flex; align-items: center; gap: 1rem; }
+.drag-guide .drag-chip { flex: 0 1 auto; min-width: 0; }
+.drag-arrow-wrap { flex: 1 1 auto; display: grid; justify-items: center; gap: 0.2rem; min-width: 140px; color: #22d3ee; }
+.drag-arrow { width: 100%; max-width: 240px; animation: drag-nudge 1.1s ease-in-out infinite; }
+.drag-arrow svg { width: 100%; height: 44px; fill: none; stroke: currentColor; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.55)); }
+.drag-arrow-text { font-size: 1.05rem; text-align: center; letter-spacing: 0.01em; }
+@keyframes drag-nudge { 0%, 100% { transform: translateX(-6px); } 50% { transform: translateX(10px); } }
+@media (prefers-reduced-motion: reduce) { .drag-arrow { animation: none; } }
+@media (max-width: 520px) {
+  .drag-guide { flex-direction: column; }
+  .drag-arrow { transform: rotate(90deg); max-width: 120px; animation: none; }
+}

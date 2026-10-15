@@ -8,6 +8,9 @@ files:
 mac:
   icon: src/icon.png
   category: public.app-category.education
+  extendInfo:
+    # Shown when the app first moves the email window next to itself (Quick submit).
+    NSAppleEventsUsageDescription: Smart School Tool puts your email window next to the app so you can drag your PDF into it.
   # Universal = one download that runs on both Apple Silicon and Intel Macs.
   target:
     - target: dmg
