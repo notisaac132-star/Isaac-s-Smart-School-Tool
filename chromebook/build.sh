@@ -12,7 +12,7 @@ mkdir -p "$OUT/vendor" "$OUT/icons"
 
 # The app itself (same files as the Windows and Mac versions, minus the desktop-only ones).
 cp "$ROOT"/src/*.html "$ROOT"/src/*.css "$ROOT"/src/*.js "$OUT/"
-rm -f "$OUT/main.js" "$OUT/updater.js"
+rm -f "$OUT/main.js" "$OUT/updater.js" "$OUT/chrome.js" "$OUT/preload.js"
 cp "$ROOT/node_modules/@supabase/supabase-js/dist/umd/supabase.js" "$OUT/vendor/supabase.js"
 
 # Chromebook extras: app manifest, offline/auto-update worker, install button, icons.

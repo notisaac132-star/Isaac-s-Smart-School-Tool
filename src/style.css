@@ -592,6 +592,11 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
   .clock { font-size: 1.25rem; }
   .clock-block .today { display: none; }
   .profile-text .account-email { display: none; }
+  .console-status { gap: 0.5rem; }
+  .settings-btn .btn-label { display: none; }
+}
+@media (max-width: 420px) {
+  .clock-block { display: none; }
 }
 
 /* Sending early */
@@ -697,3 +702,37 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
 @media (max-width: 480px) {
   .quick-fields { grid-template-columns: 1fr; }
 }
+
+/* Email setup */
+.email-setup-card h2 { margin: 1.4rem 0 0.4rem; font-size: 1.15rem; }
+.email-setup-card h2:first-child { margin-top: 0; }
+.email-setup-card .field { display: grid; gap: 0.3rem; margin-bottom: 0.75rem; }
+.email-setup-card > button { margin-top: 1rem; width: 100%; padding: 0.75rem; font-size: 1.05rem; }
+.profile-list { display: grid; gap: 0.5rem; }
+.profile-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--field);
+  cursor: pointer;
+}
+.profile-option:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79, 125, 255, 0.2); }
+.profile-option input { accent-color: var(--accent); width: 1.1rem; height: 1.1rem; margin: 0; }
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  background: linear-gradient(135deg, #4f7dff, #9b5cff);
+  color: #fff;
+  flex-shrink: 0;
+}
+.profile-option.is-school .profile-avatar { background: linear-gradient(135deg, #22d3ee, #0e7490); }
+.profile-text { display: grid; min-width: 0; }
+.profile-text span { color: var(--muted); font-size: 0.88rem; overflow-wrap: anywhere; }
+a.ghost-btn { text-decoration: none; display: inline-block; }

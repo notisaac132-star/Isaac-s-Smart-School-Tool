@@ -66,6 +66,7 @@
           <span class="clock" id="clock"></span>
           <span class="today" id="today"></span>
         </div>
+        <a class="ghost-btn settings-btn" href="#email-setup" title="Email settings" aria-label="Email settings">⚙<span class="btn-label"> Email</span></a>
         <button type="button" class="ghost-btn" id="logout-btn">Log out</button>
       </div>
     </header>
@@ -184,6 +185,50 @@
       <h2 id="amount-title">Choose an amount</h2>
       <div class="amounts" id="amounts"></div>
       <p class="form-message" id="donate-message" role="status"></p>
+    </section>
+  </main>
+
+  <!-- Email setup (required once; per computer for Chrome profiles) -->
+  <main class="view" id="email-setup" hidden>
+    <div class="view-header" id="email-setup-header">
+      <a class="back" href="#home">← Home</a>
+      <h1>Email settings</h1>
+    </div>
+    <div class="card setup-intro" id="email-setup-intro">
+      <h1>Set up email</h1>
+      <p>Choose how emails to your teachers open. You only have to do this once.</p>
+    </div>
+
+    <section class="card email-setup-card">
+      <h2>Your email service</h2>
+      <label class="field">
+        <span>Emails to teachers open in</span>
+        <select id="setup-provider">
+          <option value="gmail">Gmail</option>
+          <option value="proton">Proton Mail</option>
+          <option value="outlook">Outlook</option>
+          <option value="mailto">My computer's email app</option>
+        </select>
+      </label>
+
+      <div id="profile-section" hidden>
+        <h2>Chrome profile</h2>
+        <p class="section-hint">Emails open in this Chrome profile. Pick your <strong>school</strong> one.</p>
+        <div class="profile-list" id="profile-list" role="radiogroup" aria-label="Chrome profile"></div>
+      </div>
+
+      <div id="account-section" hidden>
+        <h2>Your school Google account</h2>
+        <p class="section-hint">Gmail will open on this account, so emails come from your school address.</p>
+        <label class="field">
+          <span>School email</span>
+          <input id="school-account" type="email" autocomplete="email" placeholder="you@yourschool.org">
+        </label>
+        <label class="report-toggle"><input type="checkbox" id="one-account"> I only use one Google account in this browser</label>
+      </div>
+
+      <p class="form-message" id="email-setup-message" role="status"></p>
+      <button type="button" id="email-setup-save">Save</button>
     </section>
   </main>
 
@@ -430,6 +475,7 @@
   <script src="ui.js"></script>
   <script src="../node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
   <script src="app.js"></script>
+  <script src="emailsetup.js"></script>
   <script src="home.js"></script>
   <script src="donate.js"></script>
   <script src="files.js"></script>

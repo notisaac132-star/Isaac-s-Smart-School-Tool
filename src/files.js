@@ -167,13 +167,13 @@ window.FilesPage = (function () {
   // In a browser (Chromebook version), open the email tab during the click so it isn't blocked as a
   // pop-up after the upload finishes. The desktop app opens links in the normal browser instead.
   function openEmailTab(provider) {
-    const isDesktopApp = /Electron/i.test(navigator.userAgent);
-    return !isDesktopApp && provider !== "mailto" ? window.open("", "_blank") : null;
+    return !window.desktop && provider !== "mailto" ? window.open("", "_blank") : null;
   }
 
+  // Desktop app: opens in the Chrome profile chosen in Email setup.
   function showEmail(tab, url) {
     if (tab && !tab.closed) tab.location.href = url;
-    else window.open(url, "_blank");
+    else window.EmailSetup.openEmail(url);
   }
 
   function uploadErrorMessage(error) {

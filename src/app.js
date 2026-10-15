@@ -52,12 +52,14 @@ function needsSetup() {
 }
 
 function showView() {
-  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study", "#donate": "donate", "#files": "files", "#quick": "quick" };
+  const routes = { "#contacts": "contacts", "#setup": "contacts", "#study": "study", "#send": "study", "#donate": "donate", "#files": "files", "#quick": "quick", "#email-setup": "email-setup" };
   let id = routes[location.hash] || "home";
   if (!currentUser) id = "auth";
   // New accounts have to add a teacher before anything else.
   const setup = needsSetup() || (currentUser && location.hash === "#setup");
   if (needsSetup()) id = "contacts";
+  // Then everyone has to finish Email setup (once; once per computer for the desktop app's Chrome profile).
+  else if (currentUser && contactsLoaded && window.EmailSetup && !window.EmailSetup.isDone()) id = "email-setup";
 
   $("setup-intro").hidden = !setup;
   $("setup-done").hidden = !setup;
@@ -70,6 +72,7 @@ function showView() {
   if (id === "study") prepareStudyForm();
   if (id === "files" && window.FilesPage) window.FilesPage.enter();
   if (id === "quick" && window.QuickSubmit) window.QuickSubmit.enter();
+  if (id === "email-setup" && window.EmailSetup) window.EmailSetup.enter();
   window.scrollTo(0, 0);
   if (id === "study" && location.hash === "#send") document.querySelector(".send-card").scrollIntoView({ block: "start" });
 }
@@ -170,6 +173,7 @@ async function onSignedIn(user) {
   $("auth-form").reset();
   showView();
   {
+    applySavedProvider();
     await importLegacyContacts();
     await Promise.all([loadContacts(), loadSessions()]);
     if (window.FilesPage) window.FilesPage.loadShared();
@@ -579,8 +583,12 @@ function composeUrl(provider, { to, subject, body }) {
   const q = encodeURIComponent;
   const mailto = `mailto:${to.map((email) => q(email).replace(/%40/g, "@")).join(",")}?subject=${q(subject)}&body=${q(body)}`;
   switch (provider) {
-    case "gmail":
-      return `https://mail.google.com/mail/?view=cm&fs=1&to=${q(to.join(","))}&su=${q(subject)}&body=${q(body)}`;
+    case "gmail": {
+      // Open Gmail on the school account chosen in Email setup (if the browser has several accounts).
+      const account = window.EmailSetup ? window.EmailSetup.gmailAccount() : "";
+      const authuser = account ? `authuser=${q(account)}&` : "";
+      return `https://mail.google.com/mail/?${authuser}view=cm&fs=1&to=${q(to.join(","))}&su=${q(subject)}&body=${q(body)}`;
+    }
     case "outlook":
       return `https://outlook.live.com/mail/0/deeplink/compose?to=${q(to.join(","))}&subject=${q(subject)}&body=${q(body)}`;
     case "proton":
@@ -595,6 +603,18 @@ function renderEmailPreview() {
   $("preview-to").textContent = email.to.join(", ") || "(nobody yet)";
   $("preview-subject").textContent = email.subject;
   $("preview-body").textContent = email.body;
+}
+
+// On a new computer, start the email-service menus on the service chosen in Email setup.
+function applySavedProvider() {
+  let local = null;
+  try {
+    local = localStorage.getItem(PROVIDER_KEY);
+  } catch {
+    local = null;
+  }
+  const provider = local || (currentUser.user_metadata && currentUser.user_metadata.mail_provider);
+  if (provider) document.querySelectorAll("#mail-provider, #file-provider, #quick-provider").forEach((select) => (select.value = provider));
 }
 
 function loadProvider() {
@@ -623,7 +643,7 @@ $("send-report").addEventListener("click", () => {
   const email = buildReportEmail();
   if (email.to.length === 0) return setMessage("send-message", "Switch on \"Weekly report\" for at least one teacher first.");
   const provider = $("mail-provider").value;
-  window.open(composeUrl(provider, email), "_blank");
+  window.EmailSetup.openEmail(composeUrl(provider, email));
   setMessage("send-message", provider === "proton"
     ? "Opened Proton Mail. Check it and press Send. If the email is empty, open \"See the email\" below and use the Copy buttons."
     : "Opened your email. Check it and press Send.", false);
