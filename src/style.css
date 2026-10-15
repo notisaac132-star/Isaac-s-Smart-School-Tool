@@ -479,8 +479,8 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
   position: relative;
   flex: 0 0 auto;
   /* Shrinks on smaller windows so the whole row fits; phones scroll instead (see below). */
-  width: clamp(84px, 11vw, 150px);
-  height: clamp(84px, 11vw, 150px);
+  width: clamp(72px, 9.5vw, 150px);
+  height: clamp(72px, 9.5vw, 150px);
   border-radius: clamp(22px, 2.6vw, 30px);
   display: grid;
   place-items: center;
@@ -681,3 +681,19 @@ select:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .recipient-picker .recipient { display: flex; margin-top: 0.35rem; color: var(--text); font-size: 0.95rem; }
 .files-privacy { margin: 0.9rem 0 0; }
 .shared-actions { display: flex; gap: 0.5rem; flex-shrink: 0; align-items: center; }
+
+/* Quick submit */
+.console-tile[data-color="teal"] { --from: #22d3ee; --to: #0e7490; }
+.quick-card .drop-zone { padding: 2.4rem 1rem; }
+.quick-card .drop-zone svg { stroke: #22d3ee; }
+.quick-card .drop-zone:hover, .quick-card .drop-zone:focus-visible, .quick-card .drop-zone.dragging { border-color: #22d3ee; }
+.quick-card .drop-zone.dragging { background: rgba(34, 211, 238, 0.12); }
+.drop-zone.has-files { border-style: solid; border-color: rgba(34, 211, 238, 0.6); }
+.quick-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1.1rem 0 0.5rem; }
+.quick-fields .field { display: grid; gap: 0.3rem; }
+.quick-preview { margin: 0.25rem 0 1rem; color: var(--muted); font-size: 0.9rem; overflow-wrap: anywhere; min-height: 1.35em; }
+.quick-btn { background: linear-gradient(135deg, #22d3ee, #0e7490); font-weight: 700; padding: 0.7rem 1.4rem; }
+.quick-btn:hover { background: linear-gradient(135deg, #67e8f9, #0e7490); }
+@media (max-width: 480px) {
+  .quick-fields { grid-template-columns: 1fr; }
+}

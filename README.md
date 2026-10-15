@@ -34,6 +34,7 @@ and the [**install guide**](INSTALL.md) walks you through it step by step.
 - 🎮 **Console-style home screen.** Big app icons you move through with the arrow keys, mouse, touch or a game controller, on a dark background with falling white dots.
 - ⏱️ **Log study time.** What you studied, how long, which day, and a note for your teacher.
 - ✈️ **Send your weekly report.** One click opens an email (Proton Mail, Gmail, Outlook or your email app) with your study time per subject, each session and the total, already addressed to your teachers. Send it on Sunday or **early** any day; the next report only includes what's new.
+- ⚡ **Quick submit.** Drop your assignment PDF, pick your teacher, name it, Submit. The email is preset: *"SMART SCHOOL TOOL: Isaac Submitted An Assignment: Worksheet 4"* with a download link.
 - 📄 **Send a PDF.** Drag a PDF for school onto the app, add a note, pick your teachers, and an email opens with a download link to it. Stop sharing any time.
 - 👥 **Teachers & tutors.** Add as many as you like and choose who gets the report.
 - 🔐 **Your own account.** Sign up with email and password; everything follows you to any computer you log in on.

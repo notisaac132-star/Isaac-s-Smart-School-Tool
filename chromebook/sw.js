@@ -12,6 +12,7 @@ const SHELL = [
   "home.js",
   "donate.js",
   "files.js",
+  "quick.js",
   "snow.js",
   "config.js",
   "pwa.js",
