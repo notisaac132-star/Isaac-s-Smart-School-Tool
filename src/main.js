@@ -1,5 +1,7 @@
 // Electron entry point: opens the school tool in its own desktop window.
-const { app, BrowserWindow, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, nativeImage, shell } = require("electron");
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { setupAutoUpdates } = require("./updater");
 const chrome = require("./chrome");
@@ -11,6 +13,22 @@ ipcMain.handle("open-email", (_event, url, profileDir) => {
   if (profileDir && chrome.openInProfile(url, profileDir)) return true;
   shell.openExternal(url);
   return true;
+});
+
+// Quick submit: the PDF is saved to a temporary folder so it can be dragged into an email as an attachment.
+const dragFolder = path.join(os.tmpdir(), "Smart School Tool");
+ipcMain.handle("save-pdf", (_event, name, bytes) => {
+  const safe = path.basename(String(name)).replace(/[<>:"/\\|?*\x00-\x1f]/g, "_").slice(0, 120) || "assignment";
+  const file = path.join(dragFolder, /\.pdf$/i.test(safe) ? safe : `${safe}.pdf`);
+  fs.mkdirSync(dragFolder, { recursive: true });
+  fs.writeFileSync(file, Buffer.from(bytes));
+  return file;
+});
+ipcMain.on("drag-file", (event, file) => {
+  // Only files this app saved above can be dragged out.
+  if (typeof file !== "string" || path.dirname(file) !== dragFolder || !fs.existsSync(file)) return;
+  const icon = nativeImage.createFromPath(path.join(__dirname, "icon.png")).resize({ width: 48, height: 48 });
+  event.sender.startDrag({ file, icon });
 });
 
 function createWindow() {

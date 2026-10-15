@@ -1,6 +1,7 @@
 // Service worker for the Chromebook (web) version.
 // Network first: whenever the Chromebook is online it gets the newest version of the app straight away
-// (that's the auto-update). The latest copy is kept in a cache so the app still opens offline.
+// (that's the auto-update). The latest copy is kept in a cache so the app still opens offline, or on a
+// network that blocks the site, as long as it was opened once somewhere else.
 const VERSION = "__VERSION__";
 const CACHE = `smart-school-${VERSION}`;
 const SHELL = [
@@ -44,15 +45,19 @@ self.addEventListener("fetch", (event) => {
   // Only handle the app's own files; accounts and data (Supabase) always go straight to the network.
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
 
+  const saved = () => caches.match(request, { ignoreSearch: true }).then((cached) => cached || caches.match("index.html"));
   event.respondWith(
     fetch(request, { cache: "no-cache" })
       .then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(request, copy));
+        // A network that blocks the site (e.g. at school) answers with an error or a redirect to its block
+        // page: use the saved copy instead, and never save the block page over it.
+        if (!response.ok || response.redirected || response.type !== "basic") {
+          return saved().then((cached) => cached || response);
         }
+        const copy = response.clone();
+        caches.open(CACHE).then((cache) => cache.put(request, copy));
         return response;
       })
-      .catch(() => caches.match(request, { ignoreSearch: true }).then((cached) => cached || caches.match("index.html")))
+      .catch(saved)
   );
 });

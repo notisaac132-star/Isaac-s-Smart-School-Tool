@@ -1,7 +1,7 @@
 // Real Gmail attachments (Chromebook / web version only). With a Google sign-in (scope: compose drafts),
 // Quick submit makes a Gmail draft with the PDF attached and opens it, instead of an email with a link.
-// Turned off until APP_CONFIG.googleClientId is set. The desktop apps can't use it: Google blocks its
-// sign-in inside apps, so they keep using short links.
+// Needs APP_CONFIG.googleClientId. The desktop apps can't use it (Google blocks its sign-in inside apps),
+// so there the student drags the PDF into the email instead (quick.js).
 window.GmailAttach = (function () {
   const SCOPE = "https://www.googleapis.com/auth/gmail.compose";
   const clientId = (window.APP_CONFIG && window.APP_CONFIG.googleClientId) || "";
@@ -11,12 +11,6 @@ window.GmailAttach = (function () {
   let loading = null;
 
   const available = () => Boolean(clientId) && !window.desktop;
-
-  // On unless the student switched it off in Email setup.
-  function enabled() {
-    const meta = (currentUser && currentUser.user_metadata) || {};
-    return available() && meta.gmail_attach !== false;
-  }
 
   // Google's sign-in script. Loaded ahead of time: the sign-in pop-up has to open straight from the click.
   function load() {
@@ -127,5 +121,5 @@ window.GmailAttach = (function () {
     return `https://mail.google.com/mail/u/${user}/#drafts?compose=${draft.message.id}`;
   }
 
-  return { available, enabled, load, hasToken, getToken, createDraft };
+  return { available, load, hasToken, getToken, createDraft };
 })();

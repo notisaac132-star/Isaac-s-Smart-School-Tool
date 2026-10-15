@@ -216,8 +216,6 @@
           <input id="school-account" type="email" autocomplete="email" placeholder="you@yourschool.org">
         </label>
         <label class="report-toggle"><input type="checkbox" id="one-account"> I only use one Google account in this browser</label>
-        <label class="report-toggle" id="attach-row" hidden><input type="checkbox" id="gmail-attach" checked>
-          📎 Attach PDFs to the email itself (asks you to sign in with Google once)</label>
       </div>
 
       <p class="form-message" id="email-setup-message" role="status"></p>
@@ -269,12 +267,13 @@
         <button type="button" id="quick-submit" class="quick-btn">⚡ Submit</button>
       </div>
       <p class="form-message" id="quick-message" role="status"></p>
-      <p class="section-hint files-privacy">Your PDFs are stored privately in your account. Your teacher gets a download
-        link that works for 1 year, and you can stop sharing any time below.</p>
+      <div class="attach-box" id="attach-box" hidden></div>
+      <p class="section-hint files-privacy" id="quick-hint"></p>
     </section>
 
-    <section class="card">
-      <h2>Files you've shared</h2>
+    <section class="card" id="shared-section" hidden>
+      <h2>Older shared links</h2>
+      <p class="section-hint">Earlier versions sent these PDFs as download links. You can stop sharing them.</p>
       <ul class="session-list" id="shared-files"></ul>
     </section>
   </main>
