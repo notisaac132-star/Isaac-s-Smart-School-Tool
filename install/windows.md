@@ -31,6 +31,10 @@ It tells you when there's a new version and opens the download for you.
 
 ## Having trouble?
 
+- **Clicked Download and nothing happened?** Press **Ctrl + J** to open Chrome's downloads: it's probably there already.
+  If a **Save as** box opened behind the browser (or on another screen), press **Alt + Tab** to find it. Still nothing?
+  Get it from the [Releases page](https://github.com/notisaac132-star/Isaac-s-Smart-School-Tool/releases/latest)
+  (click *Smart-School-Tool-Windows-Setup.exe* under **Assets**). On a school computer, downloading .exe files may be blocked.
 - **No "Run anyway" button?** Click **More info** first. It's a small link under the message.
 - **Your antivirus blocked it?** Allow *Smart School Tool* in your antivirus, then open the file again.
 - **Want to remove it?** **Start** → **Settings** → **Apps** → **Installed apps** → **Smart School Tool** → **Uninstall**.
