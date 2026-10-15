@@ -759,3 +759,31 @@ a.ghost-btn { text-decoration: none; display: inline-block; }
   .drag-guide { flex-direction: column; }
   .drag-arrow { transform: rotate(90deg); max-width: 120px; animation: none; }
 }
+
+/* Full-window drag guide (desktop app), shown until the student says they sent it */
+.drag-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.5rem;
+  background: radial-gradient(ellipse at top, rgba(20, 26, 43, 0.97), rgba(11, 14, 22, 0.98) 70%);
+  backdrop-filter: blur(6px);
+}
+.drag-overlay[hidden] { display: none; }
+.drag-overlay-inner { width: 100%; max-width: 900px; display: grid; gap: 1.6rem; text-align: center; }
+.drag-overlay h2 { margin: 0; font-size: clamp(1.4rem, 3.4vw, 2.2rem); }
+.drag-overlay-note { margin: 0; color: var(--muted); }
+.drag-overlay .drag-guide { flex-direction: column; gap: 1.6rem; }
+.drag-overlay .drag-chip { padding: 1.4rem 1.8rem; border-width: 3px; border-radius: 18px; align-self: center; }
+.drag-overlay .drag-chip-icon { font-size: 3.2rem; }
+.drag-overlay .drag-chip-text strong { font-size: 1.3rem; }
+.drag-overlay .drag-arrow-wrap { width: 100%; }
+.drag-overlay .drag-arrow { max-width: none; width: 100%; }
+.drag-overlay .drag-arrow svg { height: clamp(70px, 14vh, 140px); stroke-width: 7; }
+.drag-overlay .drag-arrow-text { font-size: clamp(1.6rem, 4.5vw, 3rem); text-transform: uppercase; letter-spacing: 0.03em;
+  text-shadow: 0 0 18px rgba(34, 211, 238, 0.6); }
+.drag-overlay-hint { margin: 0; color: var(--muted); font-size: 1.05rem; }
+.drag-overlay-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+.drag-overlay .drag-done { font-size: 1.15rem; padding: 0.85rem 1.8rem; }

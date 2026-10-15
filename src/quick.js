@@ -226,6 +226,34 @@ window.QuickSubmit = (function () {
       UI.h("div", { class: "drag-arrow-wrap" }, arrow, UI.h("strong", { class: "drag-arrow-text", text: "drag and drop to this window!" })));
   }
 
+  // Fills the app's window with the PDF and the arrow until the student says they've sent it.
+  function showDragOverlay(guide, teacher, note) {
+    const overlay = $("drag-overlay");
+    const close = (sent) => {
+      overlay.hidden = true;
+      overlay.replaceChildren();
+      document.removeEventListener("keydown", onKey);
+      if (sent) setMessage(`Handed in! Your assignment went to ${teacher.name}.`, false);
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape") close(false);
+    };
+    const sent = UI.h("button", { type: "button", class: "quick-btn drag-done", text: "✓ I sent it" });
+    sent.addEventListener("click", () => close(true));
+    const later = UI.h("button", { type: "button", class: "ghost-btn", text: "Close" });
+    later.addEventListener("click", () => close(false));
+    overlay.replaceChildren(
+      UI.h("div", { class: "drag-overlay-inner" },
+        UI.h("h2", { text: `Attach it to your email to ${teacher.name}` }),
+        note ? UI.h("p", { class: "drag-overlay-note", text: note.trim() }) : null,
+        guide,
+        UI.h("p", { class: "drag-overlay-hint", text: "Then press Send in the email and come back here." }),
+        UI.h("div", { class: "drag-overlay-actions" }, sent, later)));
+    overlay.hidden = false;
+    document.addEventListener("keydown", onKey);
+    sent.focus();
+  }
+
   // Opens the email ready to send, and the student attaches the PDF.
   async function submitAttachYourself(teacher, assignment, provider, tab, note = "") {
     const pdf = file;
@@ -238,7 +266,8 @@ window.QuickSubmit = (function () {
         files().showEmail(tab, url);
       }
       setMessage(`${note}Your email to ${teacher.name} is open on the right. Drag your PDF into it, then press Send.`, false);
-      box.replaceChildren(guide);
+      box.replaceChildren();
+      showDragOverlay(guide, teacher, note);
     } else {
       setMessage(`${note}Your email to ${teacher.name} is open. Attach ${pdf.name} to it (📎, or drag it in from your Files app), then press Send.`, false);
       box.replaceChildren();
